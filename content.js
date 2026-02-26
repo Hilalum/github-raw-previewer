@@ -29,11 +29,17 @@ function injectPreview() {
   console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
 
   // Calculate raw URL
-  // Convert /user/repo/blob/branch/path -> https://raw.githubusercontent.com/user/repo/branch/path
-  const parts = window.location.pathname.split('/');
-  parts.splice(3, 1); // remove 'blob'
-  const rawPath = parts.filter(Boolean).join('/');
-  const rawUrl = `https://raw.githubusercontent.com/${rawPath}`;
+  // GitHub displays LFS pointers as text if you hit raw.githubusercontent.com directly
+  // It's safest to get the href from the official "Raw" button because it handles 
+  // LFS redirects (to media.githubusercontent.com) automatically.
+  let rawUrl = '';
+  const rawButton = document.querySelector('[data-testid="raw-button"]');
+  if (rawButton && rawButton.href) {
+    rawUrl = rawButton.href;
+  } else {
+    // Fallback: convert /blob/ to /raw/
+    rawUrl = window.location.href.replace('/blob/', '/raw/');
+  }
 
   // Find a good place to inject
   // We look for the main react container that holds the file content

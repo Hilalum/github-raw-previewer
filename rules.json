@@ -17,12 +17,16 @@
             ]
         },
         "condition": {
-            "urlFilter": "||raw.githubusercontent.com/*.pdf*",
+            "urlFilter": "/*.pdf*",
             "excludedRegexFilter": ".*download=true.*",
             "resourceTypes": [
                 "main_frame",
                 "sub_frame",
                 "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
             ]
         }
     },
@@ -44,13 +48,17 @@
             ]
         },
         "condition": {
-            "urlFilter": "||raw.githubusercontent.com/*.mp4*",
+            "urlFilter": "/*.mp4*",
             "excludedRegexFilter": ".*download=true.*",
             "resourceTypes": [
                 "main_frame",
                 "sub_frame",
                 "media",
                 "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
             ]
         }
     },
@@ -72,13 +80,17 @@
             ]
         },
         "condition": {
-            "urlFilter": "||raw.githubusercontent.com/*.svg*",
+            "urlFilter": "/*.svg*",
             "excludedRegexFilter": ".*download=true.*",
             "resourceTypes": [
                 "main_frame",
                 "sub_frame",
                 "image",
                 "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
             ]
         }
     },
@@ -95,13 +107,17 @@
             ]
         },
         "condition": {
-            "urlFilter": "||raw.githubusercontent.com/*.webm*",
+            "urlFilter": "/*.webm*",
             "excludedRegexFilter": ".*download=true.*",
             "resourceTypes": [
                 "main_frame",
                 "sub_frame",
                 "media",
                 "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
             ]
         }
     },
@@ -118,10 +134,13 @@
             ]
         },
         "condition": {
-            "urlFilter": "||raw.githubusercontent.com",
             "excludedRegexFilter": ".*download=true.*",
             "resourceTypes": [
                 "main_frame"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
             ]
         }
     },

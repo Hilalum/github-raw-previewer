@@ -10,7 +10,8 @@
   ],
   "host_permissions": [
     "https://raw.githubusercontent.com/*",
-    "https://github.com/*"
+    "https://github.com/*",
+    "https://media.githubusercontent.com/*"
   ],
   "declarative_net_request": {
     "rule_resources": [
@@ -23,8 +24,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://github.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
