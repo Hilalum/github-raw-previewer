@@ -124,5 +124,24 @@
                 "main_frame"
             ]
         }
+    },
+    {
+        "id": 6,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Security-Policy",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||github.com",
+            "resourceTypes": [
+                "main_frame"
+            ]
+        }
     }
 ]
