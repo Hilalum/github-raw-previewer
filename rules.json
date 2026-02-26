@@ -1,0 +1,128 @@
+[
+    {
+        "id": 1,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "application/pdf"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||raw.githubusercontent.com/*.pdf*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "video/mp4"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||raw.githubusercontent.com/*.mp4*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "media",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "image/svg+xml"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||raw.githubusercontent.com/*.svg*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "image",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 4,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||raw.githubusercontent.com/*.webm*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "media",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 5,
+        "priority": 5,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||raw.githubusercontent.com",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame"
+            ]
+        }
+    }
+]
