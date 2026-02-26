@@ -38,6 +38,8 @@ function injectPreview() {
   // Find a good place to inject
   // We look for the main react container that holds the file content
   const targetContainers = [
+    document.querySelector('[class*="BlobContent-module__blobContentSection"]'), // new CSS modules UI
+    document.querySelector('[class*="BlobViewContent-module__blobContainer"]'), // new CSS modules UI alternative
     document.querySelector('[data-testid="repos-file-display"]'), // new UI
     document.querySelector('main .Box'),                          // old UI fallback
     document.querySelector('.js-blob-wrapper')                    // older UI fallback
