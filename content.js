@@ -51,12 +51,23 @@ function injectPreview() {
     return;
   }
 
-  // Hide the existing file viewer message to avoid clutter
-  // In new UI, it's often inside a container with 'repos-file-display'
-  const blankStateOrError = targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div') || targetContainer.querySelector('.blankslate');
-  if (blankStateOrError && blankStateOrError.textContent.includes('display')) {
+  // Hide the existing file viewer message and 'View raw' links to avoid clutter
+  const blankStateOrError = targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div') || targetContainer.querySelector('.blankslate') || targetContainer.querySelector('[class*="tooLargeError"]');
+  if (blankStateOrError) {
     blankStateOrError.style.display = 'none';
   }
+
+  // Specifically target any "View raw" links and hide them or their parent blocks
+  Array.from(document.querySelectorAll('a')).forEach(a => {
+    if (a.textContent.trim().toLowerCase() === 'view raw') {
+      const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('div');
+      if (parentBlock) {
+        parentBlock.style.display = 'none';
+      } else {
+        a.style.display = 'none';
+      }
+    }
+  });
 
   // Create container
   const container = document.createElement('div');
@@ -98,60 +109,12 @@ function injectPreview() {
     container.appendChild(iframe);
   }
 
-  // Add a dedicated download button next to the preview
-  const actionsContainer = document.createElement('div');
-  actionsContainer.style.cssText = `
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-    margin-bottom: 8px;
-  `;
-
-  const downloadBtn = document.createElement('a');
-  // Add a '?download=true' hint to the url
-  downloadBtn.href = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'download=true';
-  downloadBtn.textContent = '⬇️ Force Download';
-  downloadBtn.style.cssText = `
-    display: inline-block;
-    padding: 5px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 20px;
-    white-space: nowrap;
-    vertical-align: middle;
-    cursor: pointer;
-    user-select: none;
-    border: 1px solid var(--button-default-borderColor-rest, rgba(205, 217, 229, 0.1));
-    border-radius: 6px;
-    appearance: none;
-    color: var(--button-default-fgColor-rest, #c9d1d9);
-    background-color: var(--button-default-bgColor-rest, #21262d);
-    text-decoration: none;
-  `;
-
-  downloadBtn.addEventListener('mouseover', () => { downloadBtn.style.backgroundColor = 'var(--button-default-bgColor-hover, #30363d)'; });
-  downloadBtn.addEventListener('mouseout', () => { downloadBtn.style.backgroundColor = 'var(--button-default-bgColor-rest, #21262d)'; });
-  // Force click to prompt download bypass mechanism
-  downloadBtn.setAttribute('download', '');
-
-  actionsContainer.appendChild(downloadBtn);
-
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'width: 100%; margin-top: 16px;';
-
-  wrapper.appendChild(actionsContainer);
-  wrapper.appendChild(container);
-
-  // Update container style to remove top margin as it's now wrapped
-  container.style.marginTop = '0';
-
   // Inject it
   // Prepend inside the file container so it shows immediately below the toolbar
   if (targetContainer.classList.contains('Box')) {
-    targetContainer.parentElement.insertBefore(wrapper, targetContainer);
-    // targetContainer.style.display = 'none'; // Optional: hide the box entirely
+    targetContainer.parentElement.insertBefore(container, targetContainer);
   } else {
-    targetContainer.prepend(wrapper);
+    targetContainer.prepend(container);
   }
 }
 
