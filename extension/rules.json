@@ -408,5 +408,67 @@
                 "xmlhttprequest"
             ]
         }
+    },
+    {
+        "id": 16,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "image/bmp"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.bmp*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
+    },
+    {
+        "id": 17,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "image/tiff"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.tiff*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
     }
 ]
