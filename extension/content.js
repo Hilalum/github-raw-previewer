@@ -27,13 +27,12 @@ function injectPreview() {
   const isImage = ['webp', 'bmp', 'tiff', 'heic', 'heif'].includes(ext);
   const isPdf = ['pdf'].includes(ext);
   const isSvg = ['svg'].includes(ext);
-  const isCsv = ['csv'].includes(ext);
   const isOffice = ['xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
   const isiWork = ['pages', 'numbers', 'key'].includes(ext);
   const isFont = ['ttf', 'otf', 'woff', 'woff2'].includes(ext);
   const is3DModel = ['stl', 'obj', 'gltf', 'glb'].includes(ext);
 
-  if (!isVideo && !isAudio && !isImage && !isPdf && !isSvg && !isCsv && !isOffice && !isiWork && !isFont && !is3DModel) {
+  if (!isVideo && !isAudio && !isImage && !isPdf && !isSvg && !isOffice && !isiWork && !isFont && !is3DModel) {
     if (existingContainer) existingContainer.remove();
     return;
   }
@@ -84,7 +83,6 @@ function injectPreview() {
     targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
     targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
     targetContainer.querySelector('table.highlight'), // Raw code/text container
-    targetContainer.querySelector('[class*="react-csv-row"]')?.closest('table'), // React CSV container
     targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
   ];
 
@@ -142,7 +140,7 @@ function injectPreview() {
       outline: none;
     `;
     container.appendChild(audio);
-  } else if (isPdf || isSvg || isCsv) {
+  } else if (isPdf || isSvg) {
     const iframe = document.createElement('iframe');
     iframe.src = rawUrl;
     iframe.style.cssText = `

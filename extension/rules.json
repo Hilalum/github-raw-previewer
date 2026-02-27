@@ -164,6 +164,32 @@
         }
     },
     {
+        "id": 60,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Security-Policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "X-Frame-Options",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ],
+            "resourceTypes": [
+                "sub_frame"
+            ]
+        }
+    },
+    {
         "id": 7,
         "priority": 10,
         "action": {
@@ -219,37 +245,6 @@
                 "main_frame",
                 "sub_frame",
                 "media",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 9,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "text/plain"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.csv*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
                 "xmlhttprequest"
             ],
             "requestDomains": [

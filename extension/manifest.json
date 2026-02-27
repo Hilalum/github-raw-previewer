@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub Raw Previewer",
   "version": "1.0.0",
-  "description": "Stop forced downloads! Instantly preview large PDFs, Audio/Videos, Images, Data, Fonts (TTF/WOFF) & 3D Models (GLTF/OBJ) natively on GitHub.",
+  "description": "Stop forced downloads! Instantly preview large PDFs, Audio/Videos, Images, Data/Office, Fonts (TTF/WOFF) & 3D Models (GLTF/OBJ) natively on GitHub.",
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
