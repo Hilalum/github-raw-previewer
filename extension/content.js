@@ -24,7 +24,7 @@ function injectPreview() {
 
   const isVideo = ['mp4', 'webm', 'ogg', 'mov'].includes(ext);
   const isAudio = ['mp3', 'wav', 'flac', 'm4a', 'aac'].includes(ext);
-  const isImage = ['webp', 'bmp', 'tiff', 'heic', 'heif'].includes(ext);
+  const isImage = ['webp', 'bmp'].includes(ext);
   const isPdf = ['pdf'].includes(ext);
   const isSvg = ['svg'].includes(ext);
   const isOffice = ['xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
@@ -296,7 +296,7 @@ function injectPreview() {
         </style>
       </head>
       <body>
-        <model-viewer src="${rawUrl}" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+        <model-viewer src="${rawUrl}" auto-rotate camera-controls shadow-intensity="1" exposure="1.2" environment-image="neutral" camera-orbit="45deg 55deg auto"></model-viewer>
       </body>
       </html>
     `;
