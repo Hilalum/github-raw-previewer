@@ -152,8 +152,14 @@ function injectPreview() {
     `;
     container.appendChild(iframe);
   } else if (isOffice) {
+    // Microsoft Office Viewer fails on github.com redirects. We must convert it to the direct raw.githubusercontent.com URL.
+    let officeRawUrl = rawUrl;
+    if (officeRawUrl.startsWith('https://github.com/')) {
+      officeRawUrl = officeRawUrl.replace('https://github.com/', 'https://raw.githubusercontent.com/').replace('/raw/', '/').replace('/refs/heads/', '/');
+    }
+
     const iframe = document.createElement('iframe');
-    iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`;
+    iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(officeRawUrl)}`;
     iframe.style.cssText = `
       width: 100%;
       height: 85vh;
