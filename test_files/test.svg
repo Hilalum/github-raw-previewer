@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="40" fill="lightblue" stroke="blue" stroke-width="4"/>
-  <text x="50" y="55" font-size="20" text-anchor="middle" fill="blue">Test</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg"/>
