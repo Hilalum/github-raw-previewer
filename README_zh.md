@@ -21,7 +21,7 @@
 1. 克隆或下载本仓库代码到你的电脑上。
 2. 打开 Chrome / Edge 浏览器，并在地址栏输入 `chrome://extensions` (Edge 为 `edge://extensions`)。
 3. 打开右上角的 **开发者模式 (Developer mode)** 开关。
-4. 点击左上角的 **加载已解压的扩展程序 (Load unpacked)**，然后选择你刚刚解压的带有 `manifest.json` 的本文件夹。
+4. 点击左上角的 **加载已解压的扩展程序 (Load unpacked)**，然后选择带有 `manifest.json` 的 `extension` 子文件夹。
 5. 尽情享受丝滑无需下载的 GitHub 漫游体验吧！
 
 ## 🤝 参与贡献

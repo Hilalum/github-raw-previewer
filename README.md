@@ -20,7 +20,7 @@ This extension utilizes the modern Chrome Manifest V3 API (`declarativeNetReques
 1. Clone or download this repository.
 2. Open Chrome/Edge and go to `chrome://extensions` or `edge://extensions`.
 3. Enable **Developer mode** in the top right.
-4. Click **Load unpacked** and select the folder you just downloaded.
+4. Click **Load unpacked** and select the `extension` folder that you just downloaded or cloned.
 5. Enjoy seamless GitHub browsing!
 
 ## 🤝 Contributing
