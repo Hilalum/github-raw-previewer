@@ -162,5 +162,193 @@
                 "main_frame"
             ]
         }
+    },
+    {
+        "id": 7,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "video/quicktime"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.mov*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "media",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
+    },
+    {
+        "id": 8,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "audio/mpeg"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.mp3*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "media",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
+    },
+    {
+        "id": 9,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "text/plain"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.csv*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
+    },
+    {
+        "id": 10,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "application/vnd.apple.pages"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.pages*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
+    },
+    {
+        "id": 11,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "application/vnd.apple.numbers"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.numbers*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
+    },
+    {
+        "id": 12,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Type",
+                    "operation": "set",
+                    "value": "application/vnd.apple.keynote"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "/*.key*",
+            "excludedRegexFilter": ".*download=true.*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ],
+            "requestDomains": [
+                "raw.githubusercontent.com",
+                "media.githubusercontent.com"
+            ]
+        }
     }
 ]

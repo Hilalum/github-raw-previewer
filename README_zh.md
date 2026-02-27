@@ -2,7 +2,7 @@
 
 [🌍 English (英文)](README.md)
 
-🎉 **告别强制下载！在 GitHub 网页内原生、即时预览大体积的 PDF、视频（MP4/WebM）和高清图片！**
+🎉 **告别强制下载！在 GitHub 网页内原生、即时预览大体积的 PDF、音频/视频（MP3/MP4/WebM/MOV）、数据文件 (CSV/XLS/XLSX/DOC/DOCX/PPT/PPTX)、iWork 套件 (Pages/Numbers/Keynote) 和高清图片！**
 
 ## 🌟 为什么需要这个插件？
 经常逛 GitHub 的开发者肯定遇到过这个痛点：GitHub 用于存储原始文件的服务器（`raw.githubusercontent.com`）出于安全和带宽考虑，会对超过一定体积的 PDF 和多媒体文件强行打上 `Content-Disposition: attachment`（使其成为附件）的 HTTP 下载头。
@@ -26,7 +26,7 @@
 
 ## 🤝 参与贡献
 本项目非常欢迎 Issue 和 Pull Request！我们目前正在征集：
-- 提供更多视频格式支持（如 `.mov` 等苹果格式，若浏览器原生环境允许）。
+- 提供更多视频格式支持。
 - 提供办公文档格式（如 Word, Excel）支持。
 - 更精美的插件图标和商店展示视频。
 

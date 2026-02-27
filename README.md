@@ -2,7 +2,7 @@
 
 [🇨🇳 简体中文 (Chinese)](README_zh.md)
 
-Instantly preview large PDFs, Videos (MP4/WebM), and high-res Images natively on GitHub natively in the browser!  
+Instantly preview large PDFs, Audio/Videos (MP3/MP4/WebM/MOV), Data (CSV/XLS/XLSX/DOC/DOCX/PPT/PPTX) and Apple iWork (Pages/Numbers/Keynote), and high-res Images natively...
 Stop suffering from the forced `Content-Disposition: attachment` downloads on GitHub raw files.
 
 ## 🌟 Why build this?
@@ -25,7 +25,7 @@ This extension utilizes the modern Chrome Manifest V3 API (`declarativeNetReques
 
 ## 🤝 Contributing
 Issues and Pull Requests are extremely welcome! Let's eliminate meaningless GitHub downloads together. We are looking for:
-- Support for more video extensions (like `.mov`)
+- Support for more video extensions
 - Custom PDF renderer alternatives
 - Nicer icons
 

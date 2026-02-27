@@ -23,10 +23,14 @@ function injectPreview() {
   const ext = getExtension(filePath);
 
   const isVideo = ['mp4', 'webm', 'ogg', 'mov'].includes(ext);
+  const isAudio = ['mp3'].includes(ext);
   const isPdf = ['pdf'].includes(ext);
   const isSvg = ['svg'].includes(ext);
+  const isCsv = ['csv'].includes(ext);
+  const isOffice = ['xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
+  const isiWork = ['pages', 'numbers', 'key'].includes(ext);
 
-  if (!isVideo && !isPdf && !isSvg) {
+  if (!isVideo && !isAudio && !isPdf && !isSvg && !isCsv && !isOffice && !isiWork) {
     if (existingContainer) existingContainer.remove();
     return;
   }
@@ -115,7 +119,17 @@ function injectPreview() {
       outline: none;
     `;
     container.appendChild(video);
-  } else if (isPdf || isSvg) {
+  } else if (isAudio) {
+    const audio = document.createElement('audio');
+    audio.src = rawUrl;
+    audio.controls = true;
+    audio.style.cssText = `
+      width: 100%;
+      margin-top: 10px;
+      outline: none;
+    `;
+    container.appendChild(audio);
+  } else if (isPdf || isSvg || isCsv) {
     const iframe = document.createElement('iframe');
     iframe.src = rawUrl;
     iframe.style.cssText = `
@@ -123,7 +137,34 @@ function injectPreview() {
       height: 85vh;
       border: none;
       border-radius: 6px;
-      background: white; /* PDF viewer often expects light background */
+      background: white; /* viewer expectations */
+    `;
+    container.appendChild(iframe);
+  } else if (isOffice) {
+    const iframe = document.createElement('iframe');
+    // Using Microsoft Office Web Viewer for excel files
+    iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`;
+    iframe.style.cssText = `
+      width: 100%;
+      height: 85vh;
+      border: none;
+      border-radius: 6px;
+      background: white;
+    `;
+    container.appendChild(iframe);
+  } else if (isiWork) {
+    // There is no robust free web viewer for iWork files, but we can try removing the 
+    // content disposition anyway so advanced browsers might handle or proxy them.
+    // However, realistically they will just try to download without a specific renderer.
+    // For now, we will fallback to warning message or trying to let the browser handle it.
+    const iframe = document.createElement('iframe');
+    iframe.src = rawUrl;
+    iframe.style.cssText = `
+      width: 100%;
+      height: 20vh;
+      border: none;
+      border-radius: 6px;
+      background: #f6f8fa;
     `;
     container.appendChild(iframe);
   }

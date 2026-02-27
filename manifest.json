@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub Raw Previewer",
   "version": "1.0.0",
-  "description": "Stop forced downloads! Instantly preview large PDFs, Videos (MP4/WebM), and high-res Images natively on GitHub.",
+  "description": "Stop forced downloads! Instantly preview large PDFs, Audio/Videos (MP3/MP4/WebM/MOV), Data (CSV/XLS/XLSX/DOC/DOCX/PPT/PPTX/PAGES/NUMBERS/KEY), and high-res Images natively on GitHub.",
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
