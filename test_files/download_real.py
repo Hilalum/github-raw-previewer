@@ -2,27 +2,28 @@ import urllib.request
 import ssl
 import os
 
-print("📥 开始下载真实测试文件...")
+print("📥 开始下载最新真实测试文件...")
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx))
+opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')]
 urllib.request.install_opener(opener)
 
+# All completely different, highly-stable open-source links
 files = {
-    'test.ppt': 'https://file-examples.com/wp-content/storage/2017/08/file_example_PPT_250kB.ppt',
-    'test.pptx': 'https://file-examples.com/wp-content/storage/2017/08/file_example_PPT_250kB.pptx',
-    'test.xlsx': 'https://file-examples.com/wp-content/storage/2017/02/file_example_XLSX_50.xlsx',
-    'test.wav': 'https://file-examples.com/wp-content/storage/2017/11/file_example_WAV_1MG.wav',
-    'test.mov': 'https://file-examples.com/wp-content/storage/2018/04/file_example_MOV_480_700kB.mov',
-    'test.woff': 'https://raw.githubusercontent.com/w3c/web-platform-tests/master/fonts/woff/IntLft-Italic.woff',
-    'test.woff2': 'https://raw.githubusercontent.com/w3c/web-platform-tests/master/fonts/woff/IntLft-Italic.woff',
-    'test.ttf': 'https://raw.githubusercontent.com/w3c/web-platform-tests/master/fonts/Ahem.ttf',
-    'test.otf': 'https://raw.githubusercontent.com/w3c/web-platform-tests/master/fonts/Ahem.otf',
-    'test.obj': 'https://raw.githubusercontent.com/CesiumGS/cesium/main/Apps/SampleData/models/CesiumMilkTruck/CesiumMilkTruck.obj',
-    'test.tiff': 'https://file-examples.com/wp-content/storage/2017/10/file_example_TIFF_1MB.tiff'
+    'test.ppt': 'https://s29.q4cdn.com/175625835/files/doc_downloads/test.ppt',
+    'test.pptx': 'https://freetestdata.com/wp-content/uploads/2021/09/100KB_PPTX.pptx',
+    'test.xlsx': 'https://freetestdata.com/wp-content/uploads/2021/09/50KB_Xlsx.xlsx',
+    'test.wav': 'https://freetestdata.com/wp-content/uploads/2021/09/100-KB-WAV.wav',
+    'test.mov': 'https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_100KB_MOV.mov',
+    'test.woff': 'https://raw.githubusercontent.com/mdn/learning-area/master/css/styling-text/web-fonts/webfont-sample-pages/bitter-regular-webfont.woff',
+    'test.woff2': 'https://raw.githubusercontent.com/mdn/learning-area/master/css/styling-text/web-fonts/webfont-sample-pages/bitter-regular-webfont.woff2',
+    'test.otf': 'https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/OTF/SourceCodePro-Regular.otf',
+    'test.obj': 'https://raw.githubusercontent.com/intel/tinyobjloader/master/models/cube.obj',
+    'test.tiff': 'https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_100KB_TIFF.tiff'
 }
 
 for name, url in files.items():
