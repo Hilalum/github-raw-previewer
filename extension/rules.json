@@ -350,5 +350,68 @@
                 "media.githubusercontent.com"
             ]
         }
+    },
+    {
+        "id": 13,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "regexFilter": "^https?://raw\\.githubusercontent\\.com/.*\\.(ttf|otf|woff|woff2)+$",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 14,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "regexFilter": "^https?://raw\\.githubusercontent\\.com/.*\\.(stl|obj|gltf|glb)+$",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 15,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "regexFilter": "^https?://media\\.githubusercontent\\.com/.*\\.(ttf|otf|woff|woff2|stl|obj|gltf|glb)+.*$",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ]
+        }
     }
 ]

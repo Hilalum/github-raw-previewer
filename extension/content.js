@@ -23,14 +23,17 @@ function injectPreview() {
   const ext = getExtension(filePath);
 
   const isVideo = ['mp4', 'webm', 'ogg', 'mov'].includes(ext);
-  const isAudio = ['mp3'].includes(ext);
+  const isAudio = ['mp3', 'wav', 'flac', 'm4a', 'aac'].includes(ext);
+  const isImage = ['webp', 'bmp', 'tiff', 'heic', 'heif'].includes(ext);
   const isPdf = ['pdf'].includes(ext);
   const isSvg = ['svg'].includes(ext);
   const isCsv = ['csv'].includes(ext);
   const isOffice = ['xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
   const isiWork = ['pages', 'numbers', 'key'].includes(ext);
+  const isFont = ['ttf', 'otf', 'woff', 'woff2'].includes(ext);
+  const is3DModel = ['stl', 'obj', 'gltf', 'glb'].includes(ext);
 
-  if (!isVideo && !isAudio && !isPdf && !isSvg && !isCsv && !isOffice && !isiWork) {
+  if (!isVideo && !isAudio && !isImage && !isPdf && !isSvg && !isCsv && !isOffice && !isiWork && !isFont && !is3DModel) {
     if (existingContainer) existingContainer.remove();
     return;
   }
@@ -165,6 +168,106 @@ function injectPreview() {
       border: none;
       border-radius: 6px;
       background: #f6f8fa;
+    `;
+    container.appendChild(iframe);
+  } else if (isImage) {
+    const img = document.createElement('img');
+    img.src = rawUrl;
+    img.style.cssText = `
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 6px;
+      object-fit: contain;
+    `;
+    container.appendChild(img);
+  } else if (isFont) {
+    const iframe = document.createElement('iframe');
+    const fontFormat = ext === 'ttf' ? 'truetype' : ext === 'otf' ? 'opentype' : ext;
+    const srcDoc = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          @font-face {
+            font-family: 'CustomPreviewFont';
+            src: url('${rawUrl}') format('${fontFormat}');
+          }
+          body {
+            font-family: 'CustomPreviewFont', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: transparent;
+            color: #c9d1d9;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+          }
+          h1 { font-size: 48px; margin-bottom: 20px; font-weight: normal; }
+          p { font-size: 24px; line-height: 1.5; max-width: 800px; }
+          .sizes { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+        </style>
+      </head>
+      <body>
+        <h1>A Quick Brown Fox Jumps Over The Lazy Dog</h1>
+        <p>0 1 2 3 4 5 6 7 8 9 ! @ # $ % ^ & * ( ) _ + - = { } | [ ] \ : " ; ' < > ? , . /</p>
+        <div class="sizes">
+          <span style="font-size: 16px;">16px: The quick brown fox jumps...</span>
+          <span style="font-size: 24px;">24px: The quick brown fox jumps...</span>
+          <span style="font-size: 36px;">36px: The quick brown fox jumps...</span>
+        </div>
+      </body>
+      </html>
+    `;
+    iframe.srcdoc = srcDoc;
+    iframe.style.cssText = `
+      width: 100%;
+      height: 60vh;
+      border: none;
+      border-radius: 6px;
+      background: #0d1117;
+    `;
+    container.appendChild(iframe);
+  } else if (is3DModel) {
+    const iframe = document.createElement('iframe');
+    const srcDoc = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #161b22;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent;
+          }
+        </style>
+      </head>
+      <body>
+        <model-viewer src="${rawUrl}" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+      </body>
+      </html>
+    `;
+    iframe.srcdoc = srcDoc;
+    iframe.style.cssText = `
+      width: 100%;
+      height: 70vh;
+      border: none;
+      border-radius: 6px;
+      background: #161b22;
     `;
     container.appendChild(iframe);
   }

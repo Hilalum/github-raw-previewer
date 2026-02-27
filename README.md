@@ -2,7 +2,7 @@
 
 [🇨🇳 简体中文 (Chinese)](README_zh.md)
 
-Instantly preview large PDFs, Audio/Videos (MP3/MP4/WebM/MOV), Data (CSV/XLS/XLSX/DOC/DOCX/PPT/PPTX) and Apple iWork (Pages/Numbers/Keynote), and high-res Images natively...
+Instantly preview large PDFs, Audio/Videos (MP3/MP4/MOV/WAV/FLAC), Images (WEBP/TIFF/HEIC), Data/Office files, **Web Fonts** (TTF/WOFF) and **3D Models** (GLTF/OBJ/STL) natively on GitHub in the browser!  
 Stop suffering from the forced `Content-Disposition: attachment` downloads on GitHub raw files.
 
 ## 🌟 Why build this?
