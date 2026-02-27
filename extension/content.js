@@ -30,7 +30,7 @@ function injectPreview() {
   const isOffice = ['xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
   const isiWork = ['pages', 'numbers', 'key'].includes(ext);
   const isFont = ['ttf', 'otf', 'woff', 'woff2'].includes(ext);
-  const is3DModel = ['stl', 'obj', 'gltf', 'glb'].includes(ext);
+  const is3DModel = ['gltf', 'glb'].includes(ext);
 
   if (!isVideo && !isAudio && !isImage && !isPdf && !isSvg && !isOffice && !isiWork && !isFont && !is3DModel) {
     if (existingContainer) existingContainer.remove();
@@ -158,8 +158,10 @@ function injectPreview() {
       officeRawUrl = officeRawUrl.replace('https://github.com/', 'https://raw.githubusercontent.com/').replace('/raw/', '/').replace('/refs/heads/', '/');
     }
 
+    const separator = officeRawUrl.includes('?') ? '&' : '?';
+    const noCacheUrl = `${officeRawUrl}${separator}cb=${Date.now()}`;
     const iframe = document.createElement('iframe');
-    iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(officeRawUrl)}`;
+    iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(noCacheUrl)}`;
     iframe.style.cssText = `
       width: 100%;
       height: 85vh;
