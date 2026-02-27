@@ -76,16 +76,26 @@ function injectPreview() {
     return;
   }
 
-  // Hide the existing file viewer message and 'View raw' links to avoid clutter
-  const blankStateOrError = targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div') || targetContainer.querySelector('.blankslate') || targetContainer.querySelector('[class*="tooLargeError"]');
-  if (blankStateOrError) {
-    blankStateOrError.style.display = 'none';
-  }
+  // Hide ALL existing file viewer message, UI, and 'View raw' links to avoid clutter and dual-rendering
+  const elementsToHide = [
+    targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
+    targetContainer.querySelector('.blankslate'),
+    targetContainer.querySelector('[class*="tooLargeError"]'),
+    targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
+    targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
+    targetContainer.querySelector('table.highlight'), // Raw code/text container
+    targetContainer.querySelector('[class*="react-csv-row"]')?.closest('table'), // React CSV container
+    targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
+  ];
+
+  elementsToHide.forEach(el => {
+    if (el) el.style.display = 'none';
+  });
 
   // Specifically target any "View raw" links and hide them or their parent blocks
   Array.from(document.querySelectorAll('a')).forEach(a => {
     if (a.textContent.trim().toLowerCase() === 'view raw') {
-      const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('div');
+      const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
       if (parentBlock) {
         parentBlock.style.display = 'none';
       } else {
@@ -145,31 +155,56 @@ function injectPreview() {
     container.appendChild(iframe);
   } else if (isOffice) {
     const iframe = document.createElement('iframe');
-    // Using Microsoft Office Web Viewer for excel files
     iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`;
     iframe.style.cssText = `
       width: 100%;
       height: 85vh;
       border: none;
-      border-radius: 6px;
+      border-radius: 6px 6px 0 0;
       background: white;
+      display: block;
+    `;
+    container.style.flexDirection = 'column';
+    container.style.padding = '0';
+    container.style.border = '1px solid var(--borderColor-default, #30363d)';
+    container.style.overflow = 'hidden';
+
+    const fallbackAlert = document.createElement('div');
+    fallbackAlert.innerHTML = `
+      <div style="padding: 12px 16px; background-color: var(--bgColor-attention-muted, rgba(187,128,9,0.15)); color: var(--fgColor-attention, #d29922); font-size: 13px; text-align: center; border-top: 1px solid var(--borderColor-default, #30363d); border-radius: 0 0 6px 6px; width: 100%; box-sizing: border-box;">
+        <strong>Note:</strong> Microsoft Viewer cannot access private repositories. If you see an error above, <a href="${rawUrl}" download style="color: var(--fgColor-accent, #58a6ff); font-weight: bold; text-decoration: underline;">click here to download</a> natively.
+      </div>
     `;
     container.appendChild(iframe);
+    container.appendChild(fallbackAlert);
   } else if (isiWork) {
-    // There is no robust free web viewer for iWork files, but we can try removing the 
-    // content disposition anyway so advanced browsers might handle or proxy them.
-    // However, realistically they will just try to download without a specific renderer.
-    // For now, we will fallback to warning message or trying to let the browser handle it.
-    const iframe = document.createElement('iframe');
-    iframe.src = rawUrl;
-    iframe.style.cssText = `
+    // Graceful fallback for iWork since there is no web viewer. 
+    container.style.cssText = `
       width: 100%;
-      height: 20vh;
-      border: none;
+      margin-top: 16px;
+      padding: 40px 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--bgColor-muted, #0d1117);
+      border: 1px dashed var(--borderColor-default, #30363d);
       border-radius: 6px;
-      background: #f6f8fa;
+      text-align: center;
     `;
-    container.appendChild(iframe);
+    const message = document.createElement('div');
+    message.innerHTML = `
+      <h3 style="margin-bottom: 8px; color: var(--fgColor-default, #c9d1d9);">🍏 Apple iWork File Captured</h3>
+      <p style="color: var(--fgColor-muted, #8b949e); margin-bottom: 16px; max-width: 500px;">
+        Web browsers cannot natively preview <strong>.pages</strong>, <strong>.numbers</strong>, or <strong>.keynote</strong> files. The extension has successfully prevented the forced download.
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+         <a href="https://icloud.com" target="_blank" style="padding: 6px 12px; background-color: var(--bgColor-default, #21262d); color: var(--fgColor-default, #c9d1d9); text-decoration: none; border: 1px solid var(--borderColor-default, #30363d); border-radius: 6px; font-weight: 500;">Open iCloud</a>
+         <a href="${rawUrl}" download style="padding: 6px 12px; background-color: #238636; color: white; text-decoration: none; border: 1px solid rgba(240, 246, 252, 0.1); border-radius: 6px; font-weight: 500;">Download File</a>
+      </div>
+    `;
+    container.appendChild(message);
   } else if (isImage) {
     const img = document.createElement('img');
     img.src = rawUrl;
