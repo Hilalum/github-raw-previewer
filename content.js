@@ -12,7 +12,12 @@ function getExtension(filename) {
 function injectPreview() {
   // Only operate on blob pages
   const match = window.location.pathname.match(/^\/[^\/]+\/[^\/]+\/blob\/[^\/]+\/(.+)$/);
-  if (!match) return;
+  const existingContainer = document.getElementById('gh-raw-preview-container');
+
+  if (!match) {
+    if (existingContainer) existingContainer.remove();
+    return;
+  }
 
   const filePath = match[1];
   const ext = getExtension(filePath);
@@ -21,12 +26,10 @@ function injectPreview() {
   const isPdf = ['pdf'].includes(ext);
   const isSvg = ['svg'].includes(ext);
 
-  if (!isVideo && !isPdf && !isSvg) return;
-
-  // Don't inject if already injected
-  if (document.getElementById('gh-raw-preview-container')) return;
-
-  console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
+  if (!isVideo && !isPdf && !isSvg) {
+    if (existingContainer) existingContainer.remove();
+    return;
+  }
 
   // Calculate raw URL
   // GitHub displays LFS pointers as text if you hit raw.githubusercontent.com directly
@@ -40,6 +43,15 @@ function injectPreview() {
     // Fallback: convert /blob/ to /raw/
     rawUrl = window.location.href.replace('/blob/', '/raw/');
   }
+
+  // Check if we already injected for this exact URL
+  if (existingContainer) {
+    if (existingContainer.dataset.url === rawUrl) return;
+    // Container exists but URL doesn't match (SPA navigation), so remove it
+    existingContainer.remove();
+  }
+
+  console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
 
   // Find a good place to inject
   // We look for the main react container that holds the file content
@@ -78,6 +90,7 @@ function injectPreview() {
   // Create container
   const container = document.createElement('div');
   container.id = 'gh-raw-preview-container';
+  container.dataset.url = rawUrl;
   container.style.cssText = `
     width: 100%;
     margin-top: 16px;
