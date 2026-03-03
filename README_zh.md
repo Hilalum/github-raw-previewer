@@ -1,36 +1,64 @@
-# GitHub Raw Previewer
+<div align="center">
+  <img src="icon_full.png" alt="GitHub Raw Previewer Logo" width="150" />
+  <h1>GitHub Raw Previewer</h1>
 
-[🌍 English (英文)](README.md)
+  <p>在 GitHub 内部原生秒开大型文件预览，告别全家桶式的强制下载。</p>
 
-🎉 **告别强制下载！在 GitHub 网页内原生、即时预览大体积的 PDF、音频/视频（WAV/FLAC/M4A/MOV 等）、数据办公文件、高清图片 (WEBP/TIFF/HEIC)，甚至是 Web 字体 (TTF/WOFF) 和 3D 模型 (GLTF/OBJ) ！**
+  <p>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+    <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg" alt="Manifest V3">
+    <a href="#"><img src="https://img.shields.io/badge/Chrome_Web_Store-Coming_Soon-orange.svg" alt="Chrome Web Store"></a>
+    <img src="https://img.shields.io/badge/Version-1.0.0-blue.svg" alt="Version">
+  </p>
 
-## 🌟 为什么需要这个插件？
-经常逛 GitHub 的开发者肯定遇到过这个痛点：GitHub 用于存储原始文件的服务器（`raw.githubusercontent.com`）出于安全和带宽考虑，会对超过一定体积的 PDF 和多媒体文件强行打上 `Content-Disposition: attachment`（使其成为附件）的 HTTP 下载头。
-这意味着，如果你只是想**看一眼**某项目的演示视频，或者翻两页它的说明书 PDF，你也不得不把几百兆的大文件先下载到堆积如山的 `Downloads/` 文件夹里，体验极其反人类。
+  [**English**](./README.md) • [**简体中文 (Chinese)**](./README_zh.md)
+</div>
 
-**GitHub Raw Previewer** 就是为此而生！
-它利用最现代化的 Chrome Manifest V3 API（`declarativeNetRequest`），在网络底层暴力抹除了 GitHub 的强制下载头，并巧妙地将 HTML5 原生播放器和 PDF 阅读器无缝注入到 GitHub 仓库的文件预览区。
+---
 
-## 📦 核心特性
-- **零点击无感拦截：** 替代 GitHub Blob 页那个枯燥的“无法渲染 / View Raw”占位符，直接为你内嵌一个功能齐全的视频播放器或全高清的阅读器。
-- **纯粹且快速的本地原生加载：** 不依赖任何可能卡顿或泄露隐私的第三方跨域抓取代理 API。我们完全信任且只使用你浏览器自带的 `<video>` 视频引擎和 PDF 解析引擎渲染文件。
-- **链接拦截直达：** 哪怕你别人发给你一个 `https://raw.github...` 的直接链接，只要你安装了它，浏览器也不会发起下载动作，而是干净利落的把文件在标签页里展示出来。
+## 🌟 为什么开发这个插件？
 
-## 🛠️ 安装方法 (开发者预览版)
+GitHub 官方的文件数据服务器 (`raw.githubusercontent.com`) 为了削减成本并简化请求，默认给所有大于普通代码范畴的文件下发 "作为附件下载" (Content-Disposition: attachment) 响应头。
+每次只是想临时查看一下朋友发在 issue 或仓库里的视频、PDF 甚至一个大尺寸图片，都会惨遭弹层并被迫塞满整整半个 `Downloads/` 文件夹的垃圾！
 
-1. 克隆或下载本仓库代码到你的电脑上。
-2. 打开 Chrome / Edge 浏览器，并在地址栏输入 `chrome://extensions` (Edge 为 `edge://extensions`)。
-3. 打开右上角的 **开发者模式 (Developer mode)** 开关。
-4. 点击左上角的 **加载已解压的扩展程序 (Load unpacked)**，然后选择带有 `manifest.json` 的 `extension` 子文件夹。
-5. 尽情享受丝滑无需下载的 GitHub 漫游体验吧！
+此谷歌扩展运用最尖端安全的 Chrome V3 网络拦截接口 (`declarativeNetRequest`) ，能够巧妙抹去 GitHub 这种耍流氓式的 Header 头部强制头，并为你极其优雅且超清地插入一个内置媒体渲染器！不仅再也不会莫名其妙地直接下载了，而且即开即用！
 
-## 🤝 参与贡献
-本项目非常欢迎 Issue 和 Pull Request！我们目前正在征集：
-- 提供更多视频格式支持。
-- 提供办公文档格式（如 Word, Excel）支持。
-- 更精美的插件图标和商店展示视频。
+## 📦 核心功能
 
-让我们携手消灭所有无意义的 GitHub 下载行为。
+- **零点击解析** —— 开局一把梭！替代 GitHub 单调空白的 "View Raw" 点击框，直接把播放器塞在 GitHub 文件管理页里。
+- **纯原生性能渲染** —— 远离龟速跨境服务器转发！此扩展 100% 只依靠你本机目前 Chrome / Edge 霸道的 GPU 画质原生渲染 `<video>` 或 `<iframe>` ！
+- **请求头大挪移** —— 在别人口中拿到的 `https://raw.github...` 链接，原本点击就跳下载框。拥有这个插件后，在浏览器直接点开该直连网址，将不再提示下载，而是直接在当前网页丝滑预览文件本体。
+- **优雅的故障隔离** —— 面对世界上完全不可能被浏览器直接打开的远古闭源文件 (比如苹果的 `.pages` 等等) 会出现一个好看的下载提醒面板以免界面报错。
+
+## 📂 支持的格式与在线示例文件
+
+*推荐在你安装此插件后，随意点击以下列表里的任意测试文件进行观感体验！*
+
+| 类型 | 支持的格式后缀 | 仓库内真实示例体验链接 |
+| :--- | :--- | :--- |
+| **🎥 常用视频** | `.mp4`, `.webm`, `.mov` | [`test.mp4`](./test_files/test.mp4) • [`test.webm`](./test_files/test.webm) • [`test.mov`](./test_files/test.mov) |
+| **🎵 音频文件** | `.mp3`, `.wav`, `.flac` | [`test.mp3`](./test_files/test.mp3) • [`test.wav`](./test_files/test.wav) • [`test.flac`](./test_files/test.flac) |
+| **📄 文档** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
+| **📊 Office 办公套件** | `.doc`, `.docx`, `.ppt`, `.pptx`, `.xls`, `.xlsx` | [`test.docx`](./test_files/test.docx) • [`test.pptx`](./test_files/test.pptx) • [`test.xlsx`](./test_files/test.xlsx) |
+| **🖼️ 高清无损图像** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
+| **🧊 3D 渲染模型** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
+| **🅰️ 网页字体包** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
+| **🍎 苹果 iWork 源文件** | `.pages`, `.numbers`, `.key` | *(仅唤起优美的苹果系统提示横幅)* |
+
+*(说明: GitHub 其实自身已经能很好地预览 Markdown 以及 CSV 表格表格文件了，为了避免冲突卡顿，我们的插件会显式地略过这些格式不进行干预处理。)*
+
+## 🛠️ 安装说明
+
+1. 任意在本项目内找地方点击下载这个包为 ZIP 解压，或者执行 Clone。
+2. 打开你的 Chrome / Edge 全新浏览器核心页面并前往扩展程序管理页 `chrome://extensions`。
+3. 把主管理页面右上角的 **开发者模式** 选项强行开启。
+4. 点左上角的第一颗按钮 **加载已解压的扩展程序**。
+5. 毫不犹豫地在文件夹弹窗里指向选取你刚下载代码里存在的 `extension` 主文件目录！完成！立刻返回 Github 重刷页面看惊喜。
+
+## 🤝 一起开发贡献
+
+如果对功能或者体验有不爽的地方极其欢迎提出 Issues 以及各类 Pull Requests（合并请求）！让我们彻底终结毫无意义却无可奈何的各种“点击强制下载”。
 
 ## 📄 开源许可证
-本项目遵循 MIT License 协议开源。
+
+秉持人类代码共享互助的初心，此项目使用 [MIT License](LICENSE) 证书。
