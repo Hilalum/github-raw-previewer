@@ -28,7 +28,6 @@ function injectPreview() {
     "Image & Vectors": { _enabled: true, webp: true, bmp: true, svg: true, tiff: true, tif: true, heic: true },
     "PDF Document": { _enabled: true, pdf: true },
     "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
-    "Apple iWork": { _enabled: true, pages: true, numbers: true, key: true },
     "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
     "3D Models": { _enabled: true, gltf: true, glb: true, obj: true, stl: true }
   };
@@ -65,7 +64,6 @@ function injectPreview() {
     const isSvg = ext === 'svg';
     const isImage = currentCategory === 'Image & Vectors' && !isSvg;
     const isOffice = currentCategory === 'Office';
-    const isiWork = currentCategory === 'Apple iWork';
     const isFont = currentCategory === 'Fonts';
     const is3DModel = currentCategory === '3D Models';
 
@@ -232,34 +230,6 @@ function injectPreview() {
     `;
       container.appendChild(iframe);
       container.appendChild(fallbackAlert);
-    } else if (isiWork) {
-      // Graceful fallback for iWork since there is no web viewer. 
-      container.style.cssText = `
-      width: 100%;
-      margin-top: 16px;
-      padding: 40px 20px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: var(--bgColor-muted, #0d1117);
-      border: 1px dashed var(--borderColor-default, #30363d);
-      border-radius: 6px;
-      text-align: center;
-    `;
-      const message = document.createElement('div');
-      message.innerHTML = `
-      <h3 style="margin-bottom: 8px; color: var(--fgColor-default, #c9d1d9);">🍏 Apple iWork File Captured</h3>
-      <p style="color: var(--fgColor-muted, #8b949e); margin-bottom: 16px; max-width: 500px;">
-        Web browsers cannot natively preview <strong>.pages</strong>, <strong>.numbers</strong>, or <strong>.keynote</strong> files. The extension has successfully prevented the forced download.
-      </p>
-      <div style="display: flex; gap: 12px; justify-content: center;">
-         <a href="https://icloud.com" target="_blank" style="padding: 6px 12px; background-color: var(--bgColor-default, #21262d); color: var(--fgColor-default, #c9d1d9); text-decoration: none; border: 1px solid var(--borderColor-default, #30363d); border-radius: 6px; font-weight: 500;">Open iCloud</a>
-         <a href="${rawUrl}" download style="padding: 6px 12px; background-color: #238636; color: white; text-decoration: none; border: 1px solid rgba(240, 246, 252, 0.1); border-radius: 6px; font-weight: 500;">Download File</a>
-      </div>
-    `;
-      container.appendChild(message);
     } else if (isImage) {
       const img = document.createElement('img');
       img.src = rawUrl;

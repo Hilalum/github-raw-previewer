@@ -4,7 +4,6 @@ const defaultOptions = {
     "Image & Vectors": { _enabled: true, webp: true, bmp: true, svg: true, tiff: true, tif: true, heic: true },
     "PDF Document": { _enabled: true, pdf: true },
     "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
-    "Apple iWork": { _enabled: true, pages: true, numbers: true, key: true },
     "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
     "3D Models": { _enabled: true, gltf: true, glb: true, obj: true, stl: true }
 };

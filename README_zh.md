@@ -37,7 +37,7 @@
 *   **⚡️ 开局即看 (零点击解析)：** 它神不知鬼不觉地融合替代了 GitHub 单调的占位符。当你点进仓库目标文件的瞬间，无需任何额外点击，播放器画面已然加载完毕。
 *   **🛡️ 严苛的 Manifest V3 架构：** 抛弃远古的不安全权限，全部构建于最现代的 `declarativeNetRequest` API 网络请求拦截层之上。
 *   **🌐 纯粹的原生物理渲染：** 拒绝低效粗糙的代理预览站。该插件直接解封你本身 Chrome/Edge 内核被封印的超清 4K、无损音轨以及通过 GPU 硬件加速解析的高清 3D 几何模块能力。
-*   **🔗 优雅沉浸式的错误降级：** 遇到完全无法在任何内核渲染的绝对闭源怪胎格式 (比如苹果生态系统的 iWork 源文件) ，亦或是处于内网无权外联的敏感文档，插件会聪明地收敛行为，弹出一个高颜值的系统提示栏，保底你的完美体验。
+*   **🔗 优雅沉浸式的错误降级：** 遇到内网无权外联的敏感私有仓库文档，插件会聪明地收敛行为，弹出一个高颜值的系统提示栏，保底你的完美体验。
 
 ---
 
@@ -54,7 +54,6 @@
 | **🖼️ 高清无损及工程图** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
 | **🧊 次世代互动 3D 引擎** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
 | **🅰️ Web 原生前端极客字库** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
-| **🍎 傲慢的 Apple 闭源套件** | `.pages`, `.numbers`, `.key` | *(仅唤起高级定制的苹果系统提示横幅)* |
 
 *(极客声明: 因为察觉到了 GitHub 官方其实自带对于 Markdown 及 CSV 数据库列表的微弱预览能力，为了保证生态和谐不干涉不冲突，我们的黑科技解析框架会非常智能地对这两种常见短平快类别执行免密通行放行。)*
 

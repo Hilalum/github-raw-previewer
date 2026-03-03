@@ -35,7 +35,7 @@ This clutters your computer's `Downloads/` directory and wastes time, especially
 *   **⚡️ Zero-Click Inline Preview:** Seamlessly replaces GitHub's native empty container. You browse your repository, and the file is just *there*, rendering beautifully.
 *   **🛡️ Chrome Manifest V3:** Built entirely on the rigorous security and performance standards of Manifest V3 using the modern `declarativeNetRequest` API.
 *   **🌐 True Native Rendering:** Renders 4K video, lossless audio, and complex 3D models utilizing your browser's core rendering engine (GPU accelerated).
-*   **🔗 Smart Fallbacks:** Gracefully handles encrypted private repositories and provides dedicated fallback UI panels for completely un-renderable proprietary formats (e.g., Apple iWork).
+*   **🔗 Smart Fallbacks:** Gracefully handles encrypted private repositories with dedicated fallback UI panels.
 
 ---
 
@@ -52,7 +52,6 @@ This clutters your computer's `Downloads/` directory and wastes time, especially
 | **🖼️ Complex Images** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
 | **🧊 Native 3D Models** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
 | **🅰️ Web Typography** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
-| **🍎 Apple iWork** | `.pages`, `.numbers`, `.key` | *(Renders beautiful intelligent warning banners)* |
 
 *(Note: GitHub natively supports CSV and Markdown previews, so our extension explicitly leaves those pristine and untouched without interference.)*
 
