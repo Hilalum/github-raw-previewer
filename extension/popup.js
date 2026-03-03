@@ -78,7 +78,17 @@ function renderUI() {
         header.appendChild(toggleWrap);
 
         header.addEventListener('click', () => {
-            row.classList.toggle('open');
+            const isCurrentlyOpen = row.classList.contains('open');
+            // Close all
+            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('open'));
+            // Toggle clicked
+            if (!isCurrentlyOpen) {
+                row.classList.add('open');
+                // Scroll into view if needed after a tiny delay
+                setTimeout(() => {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+            }
         });
 
         row.appendChild(header);

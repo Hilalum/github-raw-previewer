@@ -94,42 +94,45 @@ function injectPreview() {
 
     const targetContainer = targetContainers.find(c => c !== null);
 
-    // Always attempt to hide native elements, because React might re-render them at any time during SPA navigation
-    if (targetContainer) {
-      const elementsToHide = [
-        targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
-        targetContainer.querySelector('.blankslate'),
-        targetContainer.querySelector('[class*="tooLargeError"]'),
-        targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
-        targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
-        targetContainer.querySelector('table.highlight'), // Raw code/text container
-        targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
-      ];
-
-      elementsToHide.forEach(el => {
-        if (el && el.style.display !== 'none') {
-          el.style.setProperty('display', 'none', 'important');
-        }
-      });
-
-      Array.from(document.querySelectorAll('a')).forEach(a => {
-        if (a.textContent.trim().toLowerCase() === 'view raw') {
-          const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
-          if (parentBlock && parentBlock.style.display !== 'none') {
-            parentBlock.style.setProperty('display', 'none', 'important');
-          } else if (a.style.display !== 'none') {
-            a.style.setProperty('display', 'none', 'important');
-          }
-        }
-      });
+    if (!targetContainer) {
+      // Don't show warning, normal if navigating to code files
+      return;
     }
+
+    // Always attempt to hide native elements, because React might re-render them at any time during SPA navigation
+    const elementsToHide = [
+      targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
+      targetContainer.querySelector('.blankslate'),
+      targetContainer.querySelector('[class*="tooLargeError"]'),
+      targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
+      targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
+      targetContainer.querySelector('table.highlight'), // Raw code/text container
+      targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
+    ];
+
+    elementsToHide.forEach(el => {
+      if (el && el.style.display !== 'none') {
+        el.style.setProperty('display', 'none', 'important');
+      }
+    });
+
+    Array.from(document.querySelectorAll('a')).forEach(a => {
+      if (a.textContent.trim().toLowerCase() === 'view raw') {
+        const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
+        if (parentBlock && parentBlock.style.display !== 'none') {
+          parentBlock.style.setProperty('display', 'none', 'important');
+        } else if (a.style.display !== 'none') {
+          a.style.setProperty('display', 'none', 'important');
+        }
+      }
+    });
 
     // Check if we already injected for this exact URL
     if (existingContainer) {
       if (existingContainer.dataset.url === rawUrl) {
         // Ensure the container is still inside the current targetContainer 
         // (sometimes React recreates the DOM but leaves our element dangling or we just want to ensure it's visible)
-        if (targetContainer && existingContainer.parentElement !== targetContainer && existingContainer.parentElement !== targetContainer.parentElement) {
+        if (existingContainer.parentElement !== targetContainer && existingContainer.parentElement !== targetContainer.parentElement) {
           // It's detached from the current valid container, so remove it and recreate
           existingContainer.remove();
         } else {
