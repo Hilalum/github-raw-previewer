@@ -2,12 +2,17 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     width: 320px;
+    height: 480px;
+    /* Forces Chrome popup to open at full size, solving clipping bugs */
     padding: 16px;
     background-color: #0d1117;
     color: #c9d1d9;
     margin: 0;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    /* Keep scrolling strictly inside the container */
 }
 
 .header {
@@ -15,6 +20,7 @@ body {
     align-items: center;
     gap: 12px;
     margin-bottom: 8px;
+    flex-shrink: 0;
 }
 
 .header img {
@@ -45,6 +51,7 @@ body {
     line-height: 1.4;
     margin-top: 0;
     margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 /* Category Container */
@@ -52,14 +59,17 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 400px;
+    flex: 1;
+    /* Takes up all remaining middle space */
     overflow-y: auto;
+    /* Scrollable! */
     padding-right: 4px;
 }
 
 #categories-container::-webkit-scrollbar {
     width: 6px;
 }
+
 #categories-container::-webkit-scrollbar-thumb {
     background-color: #30363d;
     border-radius: 6px;
@@ -104,6 +114,7 @@ body {
     width: 16px;
     height: 16px;
 }
+
 .category-row.open .caret {
     transform: rotate(180deg);
 }
@@ -115,6 +126,7 @@ body {
     border-top: 1px solid #30363d;
     padding: 4px 0;
 }
+
 .category-row.open .extensions-list {
     display: block;
 }
@@ -139,16 +151,25 @@ body {
     width: 32px;
     height: 18px;
 }
-.switch input { opacity: 0; width: 0; height: 0; }
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
 
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: #30363d;
     transition: .3s;
     border-radius: 18px;
 }
+
 .slider:before {
     position: absolute;
     content: "";
@@ -160,10 +181,12 @@ body {
     transition: .3s;
     border-radius: 50%;
 }
-input:checked + .slider {
+
+input:checked+.slider {
     background-color: #238636;
 }
-input:checked + .slider:before {
+
+input:checked+.slider:before {
     transform: translateX(14px);
     background-color: #ffffff;
 }
@@ -186,6 +209,7 @@ input:checked + .slider:before {
     color: #58a6ff;
     text-decoration: none;
 }
+
 .footer a:hover {
     text-decoration: underline;
 }
