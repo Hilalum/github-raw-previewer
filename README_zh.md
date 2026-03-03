@@ -1,64 +1,92 @@
 <div align="center">
-  <img src="icon_full.png" alt="GitHub Raw Previewer Logo" width="150" />
-  <h1>GitHub Raw Previewer</h1>
+  <img src="icon_full.png" alt="GitHub Raw Previewer Logo" width="160" />
 
-  <p>在 GitHub 内部原生秒开大型文件预览，告别全家桶式的强制下载。</p>
+  # 👁️ GitHub Raw Previewer (无缝预览增强工具)
+
+  <p><b>解锁 GitHub 文件管理器内原生、零点击的高清媒体与办公文档秒开能力。</b></p>
 
   <p>
-    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-    <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg" alt="Manifest V3">
-    <a href="#"><img src="https://img.shields.io/badge/Chrome_Web_Store-Coming_Soon-orange.svg" alt="Chrome Web Store"></a>
-    <img src="https://img.shields.io/badge/Version-1.0.0-blue.svg" alt="Version">
+    <a href="https://github.com/Hilalum/github-raw-previewer/stargazers"><img src="https://img.shields.io/github/stars/Hilalum/github-raw-previewer?style=for-the-badge&color=ffd700&label=Stars" alt="Stars"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT"></a>
+    <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg?style=for-the-badge" alt="Manifest V3">
+    <a href="#"><img src="https://img.shields.io/badge/Chrome_Web_Store-Coming_Soon-orange.svg?style=for-the-badge" alt="Chrome Web Store"></a>
+    <a href="https://github.com/Hilalum/github-raw-previewer/releases"><img src="https://img.shields.io/github/v/release/Hilalum/github-raw-previewer?style=for-the-badge&color=2ea44f" alt="最新发版"></a>
   </p>
 
   [**English**](./README.md) • [**简体中文 (Chinese)**](./README_zh.md)
+  
+  <br/>
 </div>
+
+## 💡 我们试图解决什么痛点？
+
+在日常使用 GitHub 浏览代码仓库时，一旦你点击了某些大型或特殊格式的内容（例如 MP4 高清视频、无损音频、高精度图像或微软 Office 文档），你会永远面对一个极其扎眼且空白的 "View Raw" 占位符。
+
+更灾难的是：如果你点击这个链接，或者他人通过 `raw.githubusercontent.com` 直接发送一个文件链接给你，GitHub 服务器会自动下发强制性的 `Content-Disposition: attachment` 下载头。
+于是，**仅仅为了“看一眼”内容，你这辈子就被迫将成百上千兆的垃圾文件塞满了你宝贵的电脑 `Downloads/` 下载目录**，烦不胜烦。
+
+## 🚀 终极破局方案
+
+**GitHub Raw Previewer** 是一款轻量、极速且安全先进的 Chrome/Edge 浏览器黑科技扩展。
+它运用谷歌最现代的 V3 网络拦截接口，优雅且霸道地抹掉了 GitHub 那条蛮不讲理的“强制下载”响应头指令。更棒的是，它直接在 GitHub 的代码面板中就地注入了原生的 HTML5 视频播放器、3D 模型渲染引擎、Office Web 框架和全套字库解析器。
+
+**全程 0 代理、极度丝滑流畅、彻底杜绝云端隐私外泄。**
+
+## ✨ 核心特性
+
+*   **⚡️ 开局即看 (零点击解析)：** 它神不知鬼不觉地融合替代了 GitHub 单调的占位符。当你点进仓库目标文件的瞬间，无需任何额外点击，播放器画面已然加载完毕。
+*   **🛡️ 严苛的 Manifest V3 架构：** 抛弃远古的不安全权限，全部构建于最现代的 `declarativeNetRequest` API 网络请求拦截层之上。
+*   **🌐 纯粹的原生物理渲染：** 拒绝低效粗糙的代理预览站。该插件直接解封你本身 Chrome/Edge 内核被封印的超清 4K、无损音轨以及通过 GPU 硬件加速解析的高清 3D 几何模块能力。
+*   **🔗 优雅沉浸式的错误降级：** 遇到完全无法在任何内核渲染的绝对闭源怪胎格式 (比如苹果生态系统的 iWork 源文件) ，亦或是处于内网无权外联的敏感文档，插件会聪明地收敛行为，弹出一个高颜值的系统提示栏，保底你的完美体验。
 
 ---
 
-## 🌟 为什么开发这个插件？
+## 📂 支持格式大全与沉浸式体验试看区
 
-GitHub 官方的文件数据服务器 (`raw.githubusercontent.com`) 为了削减成本并简化请求，默认给所有大于普通代码范畴的文件下发 "作为附件下载" (Content-Disposition: attachment) 响应头。
-每次只是想临时查看一下朋友发在 issue 或仓库里的视频、PDF 甚至一个大尺寸图片，都会惨遭弹层并被迫塞满整整半个 `Downloads/` 文件夹的垃圾！
+*为了验证本插件令人惊叹的能力，只要你当前安装并开启了这款插件，请在本项目仓库中随意点击下表中你感兴趣的任意 Demo，即可直接在你的浏览器标签页中见证魔法！*
 
-此谷歌扩展运用最尖端安全的 Chrome V3 网络拦截接口 (`declarativeNetRequest`) ，能够巧妙抹去 GitHub 这种耍流氓式的 Header 头部强制头，并为你极其优雅且超清地插入一个内置媒体渲染器！不仅再也不会莫名其妙地直接下载了，而且即开即用！
-
-## 📦 核心功能
-
-- **零点击解析** —— 开局一把梭！替代 GitHub 单调空白的 "View Raw" 点击框，直接把播放器塞在 GitHub 文件管理页里。
-- **纯原生性能渲染** —— 远离龟速跨境服务器转发！此扩展 100% 只依靠你本机目前 Chrome / Edge 霸道的 GPU 画质原生渲染 `<video>` 或 `<iframe>` ！
-- **请求头大挪移** —— 在别人口中拿到的 `https://raw.github...` 链接，原本点击就跳下载框。拥有这个插件后，在浏览器直接点开该直连网址，将不再提示下载，而是直接在当前网页丝滑预览文件本体。
-- **优雅的故障隔离** —— 面对世界上完全不可能被浏览器直接打开的远古闭源文件 (比如苹果的 `.pages` 等等) 会出现一个好看的下载提醒面板以免界面报错。
-
-## 📂 支持的格式与在线示例文件
-
-*推荐在你安装此插件后，随意点击以下列表里的任意测试文件进行观感体验！*
-
-| 类型 | 支持的格式后缀 | 仓库内真实示例体验链接 |
+| 类型维度 | 被征服的文件格式后缀 | 点此体验仓库内置的超清样本实测 |
 | :--- | :--- | :--- |
-| **🎥 常用视频** | `.mp4`, `.webm`, `.mov` | [`test.mp4`](./test_files/test.mp4) • [`test.webm`](./test_files/test.webm) • [`test.mov`](./test_files/test.mov) |
-| **🎵 音频文件** | `.mp3`, `.wav`, `.flac` | [`test.mp3`](./test_files/test.mp3) • [`test.wav`](./test_files/test.wav) • [`test.flac`](./test_files/test.flac) |
-| **📄 文档** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
+| **🎥 视网膜级媒体** | `.mp4`, `.webm`, `.mov` | [`test.mp4`](./test_files/test.mp4) • [`test.webm`](./test_files/test.webm) • [`test.mov`](./test_files/test.mov) |
+| **🎵 高保真音乐** | `.mp3`, `.wav`, `.flac` | [`test.mp3`](./test_files/test.mp3) • [`test.wav`](./test_files/test.wav) • [`test.flac`](./test_files/test.flac) |
+| **📄 经典出版物** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
 | **📊 Office 办公套件** | `.doc`, `.docx`, `.ppt`, `.pptx`, `.xls`, `.xlsx` | [`test.docx`](./test_files/test.docx) • [`test.pptx`](./test_files/test.pptx) • [`test.xlsx`](./test_files/test.xlsx) |
-| **🖼️ 高清无损图像** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
-| **🧊 3D 渲染模型** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
-| **🅰️ 网页字体包** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
-| **🍎 苹果 iWork 源文件** | `.pages`, `.numbers`, `.key` | *(仅唤起优美的苹果系统提示横幅)* |
+| **🖼️ 高清无损及工程图** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
+| **🧊 次世代互动 3D 引擎** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
+| **🅰️ Web 原生前端极客字库** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
+| **🍎 傲慢的 Apple 闭源套件** | `.pages`, `.numbers`, `.key` | *(仅唤起高级定制的苹果系统提示横幅)* |
 
-*(说明: GitHub 其实自身已经能很好地预览 Markdown 以及 CSV 表格表格文件了，为了避免冲突卡顿，我们的插件会显式地略过这些格式不进行干预处理。)*
+*(极客声明: 因为察觉到了 GitHub 官方其实自带对于 Markdown 及 CSV 数据库列表的微弱预览能力，为了保证生态和谐不干涉不冲突，我们的黑科技解析框架会非常智能地对这两种常见短平快类别执行免密通行放行。)*
 
-## 🛠️ 安装说明
+---
 
-1. 任意在本项目内找地方点击下载这个包为 ZIP 解压，或者执行 Clone。
-2. 打开你的 Chrome / Edge 全新浏览器核心页面并前往扩展程序管理页 `chrome://extensions`。
-3. 把主管理页面右上角的 **开发者模式** 选项强行开启。
-4. 点左上角的第一颗按钮 **加载已解压的扩展程序**。
-5. 毫不犹豫地在文件夹弹窗里指向选取你刚下载代码里存在的 `extension` 主文件目录！完成！立刻返回 Github 重刷页面看惊喜。
+## 🛠️ 三步上车指南
 
-## 🤝 一起开发贡献
+### 📥 下载 Release 最新成包
+1. 点击并直达专属 [版本发布 Releases](https://github.com/Hilalum/github-raw-previewer/releases) 页面。
+2. 直接下载打包完毕且纯净的 `github-raw-previewer-vX.X.X.zip`。
+3. 把下载好的 ZIP 包，解压存放至你电脑上一个固定且平时绝对不会删除的稳定目录中。
+4. 打开你的 Chrome 或者是新版 Edge 游览器引擎页，在地址栏敲击录入 `chrome://extensions` 或 `edge://extensions`。
+5. 开启右上角至高无上权限的 **“开发者模式” (Developer mode)** 。
+6. 点击左上方显目的 **加载已解压的扩展程序 (Load unpacked)**。
+7. 用光标选中你刚才小心翼翼解压出来的那个唯一的 `extension` 目录夹。大功告成！
 
-如果对功能或者体验有不爽的地方极其欢迎提出 Issues 以及各类 Pull Requests（合并请求）！让我们彻底终结毫无意义却无可奈何的各种“点击强制下载”。
+---
 
-## 📄 开源许可证
+## 👨‍💻 技术原理解析秘境 (Geeks Only)
 
-秉持人类代码共享互助的初心，此项目使用 [MIT License](LICENSE) 证书。
+有人疑惑：没有服务器节点中转，它凭什么能凭空拦下拥有庞大算力集群背书的 `githubusercontent.com` 的巨头服务器直传二进制流？
+
+答案是：我们在 `rules.json` 中配置了拥有最顶层系统网络通讯截面拦截权限的声明式网关规则。
+任何发往你这台浏览器请求的大体积 Payload 数据，在进入你硬盘物理层的上一秒，其头部字段 `Content-Disposition (附件指示器)` 就会被扩展彻底抹得一干二净。而对于响应体的真实 MIME Type 却原封不动被 Chrome 高级内核识别。此时配合极其精确注入在右上角的底层 `content.js` 组件级控制端脚本代码，通过覆盖及重新挂载 DOM 挂载极客封装的 HTML 渲染外壳结构，成就了这一切。
+
+## 🤝 如果我们的愿景引起了你的舒适
+
+如果用得爽，它解决并干掉了你电脑中积累多年的下载文件辣鸡堆！请一定要 **右上角点击赋予它一颗 Star ⭐️**！你宝贵的心意将转化为强大的催化剂，持续滋养优化开源环境。
+
+Issues 和 Pull Requests 大门极其敞开。
+诚邀全球极客大牛一起来完善补齐剩下的冷僻解码插件（比如 PSD、CAD 还有更多工业模型等）。
+
+## 📄 自由权利条款
+
+本项目代码被坚硬的 [MIT License 开源许可证书](LICENSE) 紧紧包覆，所有衍生皆享有最大的宽松与自由。 
