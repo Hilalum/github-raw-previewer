@@ -50,15 +50,6 @@ function injectPreview() {
     rawUrl = window.location.href.replace('/blob/', '/raw/');
   }
 
-  // Check if we already injected for this exact URL
-  if (existingContainer) {
-    if (existingContainer.dataset.url === rawUrl) return;
-    // Container exists but URL doesn't match (SPA navigation), so remove it
-    existingContainer.remove();
-  }
-
-  console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
-
   // Find a good place to inject
   // We look for the main react container that holds the file content
   const targetContainers = [
@@ -70,37 +61,60 @@ function injectPreview() {
   ];
 
   const targetContainer = targetContainers.find(c => c !== null);
+
+  // Always attempt to hide native elements, because React might re-render them at any time during SPA navigation
+  if (targetContainer) {
+    const elementsToHide = [
+      targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
+      targetContainer.querySelector('.blankslate'),
+      targetContainer.querySelector('[class*="tooLargeError"]'),
+      targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
+      targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
+      targetContainer.querySelector('table.highlight'), // Raw code/text container
+      targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
+    ];
+
+    elementsToHide.forEach(el => {
+      if (el && el.style.display !== 'none') {
+        el.style.setProperty('display', 'none', 'important');
+      }
+    });
+
+    Array.from(document.querySelectorAll('a')).forEach(a => {
+      if (a.textContent.trim().toLowerCase() === 'view raw') {
+        const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
+        if (parentBlock && parentBlock.style.display !== 'none') {
+          parentBlock.style.setProperty('display', 'none', 'important');
+        } else if (a.style.display !== 'none') {
+          a.style.setProperty('display', 'none', 'important');
+        }
+      }
+    });
+  }
+
+  // Check if we already injected for this exact URL
+  if (existingContainer) {
+    if (existingContainer.dataset.url === rawUrl) {
+      // Ensure the container is still inside the current targetContainer 
+      // (sometimes React recreates the DOM but leaves our element dangling or we just want to ensure it's visible)
+      if (targetContainer && existingContainer.parentElement !== targetContainer && existingContainer.parentElement !== targetContainer.parentElement) {
+        // It's detached from the current valid container, so remove it and recreate
+        existingContainer.remove();
+      } else {
+        return;
+      }
+    } else {
+      // Container exists but URL doesn't match (SPA navigation), so remove it
+      existingContainer.remove();
+    }
+  }
+
   if (!targetContainer) {
-    console.warn('[GitHub Raw Preview Extension] Could not find suitable DOM container to inject preview.');
+    console.warn('[GitHub Raw Preview Extension] Waiting for suitable DOM container to inject preview.');
     return;
   }
 
-  // Hide ALL existing file viewer message, UI, and 'View raw' links to avoid clutter and dual-rendering
-  const elementsToHide = [
-    targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
-    targetContainer.querySelector('.blankslate'),
-    targetContainer.querySelector('[class*="tooLargeError"]'),
-    targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
-    targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
-    targetContainer.querySelector('table.highlight'), // Raw code/text container
-    targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
-  ];
-
-  elementsToHide.forEach(el => {
-    if (el) el.style.display = 'none';
-  });
-
-  // Specifically target any "View raw" links and hide them or their parent blocks
-  Array.from(document.querySelectorAll('a')).forEach(a => {
-    if (a.textContent.trim().toLowerCase() === 'view raw') {
-      const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
-      if (parentBlock) {
-        parentBlock.style.display = 'none';
-      } else {
-        a.style.display = 'none';
-      }
-    }
-  });
+  console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
 
   // Create container
   const container = document.createElement('div');
