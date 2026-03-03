@@ -1,25 +1,29 @@
 /* popup.css */
+html,
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    margin: 0;
+    padding: 0;
     width: 320px;
-    height: 480px;
-    /* Forces Chrome popup to open at full size, solving clipping bugs */
-    padding: 16px;
+    height: 520px;
     background-color: #0d1117;
     color: #c9d1d9;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     overflow: hidden;
-    /* Keep scrolling strictly inside the container */
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* ── Header ── */
 .header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     flex-shrink: 0;
 }
 
@@ -49,48 +53,51 @@ body {
     font-size: 13px;
     color: #8b949e;
     line-height: 1.4;
-    margin-top: 0;
-    margin-bottom: 16px;
+    margin: 0 0 12px 0;
     flex-shrink: 0;
 }
 
-/* Category Container */
+/* ── Scrollable Middle Area ── */
 #categories-container {
+    flex: 1 1 0;
+    min-height: 0;
+    /* KEY: allows flex child to shrink below content size */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    flex: 1;
-    /* Takes up all remaining middle space */
-    overflow-y: auto;
-    /* Scrollable! */
-    padding-right: 4px;
+    gap: 6px;
+    padding-right: 2px;
 }
 
 #categories-container::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
+}
+
+#categories-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 #categories-container::-webkit-scrollbar-thumb {
     background-color: #30363d;
-    border-radius: 6px;
+    border-radius: 5px;
 }
 
-/* Accordion Rows */
+/* ── Category Row (Accordion) ── */
 .category-row {
     background-color: #161b22;
     border: 1px solid #30363d;
     border-radius: 6px;
-    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .category-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
+    padding: 9px 12px;
     cursor: pointer;
     user-select: none;
-    transition: background 0.2s;
+    transition: background 0.15s;
 }
 
 .category-header:hover {
@@ -100,7 +107,7 @@ body {
 .category-title {
     display: flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #c9d1d9;
     gap: 8px;
@@ -111,31 +118,45 @@ body {
 .caret {
     fill: #8b949e;
     transition: transform 0.2s;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
 }
 
 .category-row.open .caret {
     transform: rotate(180deg);
 }
 
-/* Extensions List */
+/* ── Extensions Sub-list ── */
 .extensions-list {
-    display: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
     background-color: #0d1117;
-    border-top: 1px solid #30363d;
-    padding: 4px 0;
+    border-top: 0px solid transparent;
 }
 
 .category-row.open .extensions-list {
-    display: block;
+    max-height: 300px;
+    /* Large enough to fit any sub-list */
+    border-top: 1px solid #30363d;
+    overflow-y: auto;
+}
+
+.extensions-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.extensions-list::-webkit-scrollbar-thumb {
+    background-color: #30363d;
+    border-radius: 4px;
 }
 
 .extension-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 16px 8px 32px;
+    padding: 7px 14px 7px 30px;
 }
 
 .extension-name {
@@ -144,12 +165,13 @@ body {
     font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
-/* Toggle Switch */
+/* ── Toggle Switch ── */
 .switch {
     position: relative;
     display: inline-block;
-    width: 32px;
-    height: 18px;
+    width: 30px;
+    height: 17px;
+    flex-shrink: 0;
 }
 
 .switch input {
@@ -166,19 +188,19 @@ body {
     right: 0;
     bottom: 0;
     background-color: #30363d;
-    transition: .3s;
-    border-radius: 18px;
+    transition: .25s;
+    border-radius: 17px;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 12px;
-    width: 12px;
+    height: 11px;
+    width: 11px;
     left: 3px;
     bottom: 3px;
-    background-color: #c9d1d9;
-    transition: .3s;
+    background-color: #8b949e;
+    transition: .25s;
     border-radius: 50%;
 }
 
@@ -187,22 +209,23 @@ input:checked+.slider {
 }
 
 input:checked+.slider:before {
-    transform: translateX(14px);
+    transform: translateX(13px);
     background-color: #ffffff;
 }
 
-/* Stop event bubbling from the header's switch click */
 .header-switch-wrap {
     display: flex;
     align-items: center;
 }
 
+/* ── Footer ── */
 .footer {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid #30363d;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #21262d;
     font-size: 12px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .footer a {
