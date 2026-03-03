@@ -22,105 +22,137 @@ function injectPreview() {
   const filePath = match[1];
   const ext = getExtension(filePath);
 
-  const isVideo = ['mp4', 'webm', 'ogg', 'mov'].includes(ext);
-  const isAudio = ['mp3', 'wav', 'flac', 'm4a', 'aac'].includes(ext);
-  const isImage = ['webp', 'bmp'].includes(ext);
-  const isPdf = ['pdf'].includes(ext);
-  const isSvg = ['svg'].includes(ext);
-  const isOffice = ['xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
-  const isiWork = ['pages', 'numbers', 'key'].includes(ext);
-  const isFont = ['ttf', 'otf', 'woff', 'woff2'].includes(ext);
-  const is3DModel = ['gltf', 'glb'].includes(ext);
+  const defaultOptions = {
+    "Video": { _enabled: true, mp4: true, webm: true, ogg: true, mov: true },
+    "Audio": { _enabled: true, mp3: true, wav: true, flac: true, m4a: true, aac: true },
+    "Image & Vectors": { _enabled: true, webp: true, bmp: true, svg: true, tiff: true, tif: true, heic: true },
+    "PDF Document": { _enabled: true, pdf: true },
+    "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
+    "Apple iWork": { _enabled: true, pages: true, numbers: true, key: true },
+    "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
+    "3D Models": { _enabled: true, gltf: true, glb: true, obj: true, stl: true }
+  };
 
-  if (!isVideo && !isAudio && !isImage && !isPdf && !isSvg && !isOffice && !isiWork && !isFont && !is3DModel) {
-    if (existingContainer) existingContainer.remove();
-    return;
-  }
+  chrome.storage.local.get(['previewConfig'], (res) => {
+    const config = res.previewConfig || defaultOptions;
 
-  // Calculate raw URL
-  // GitHub displays LFS pointers as text if you hit raw.githubusercontent.com directly
-  // It's safest to get the href from the official "Raw" button because it handles 
-  // LFS redirects (to media.githubusercontent.com) automatically.
-  let rawUrl = '';
-  const rawButton = document.querySelector('[data-testid="raw-button"]');
-  if (rawButton && rawButton.href) {
-    rawUrl = rawButton.href;
-  } else {
-    // Fallback: convert /blob/ to /raw/
-    rawUrl = window.location.href.replace('/blob/', '/raw/');
-  }
+    let currentCategory = null;
+    let isSupported = false;
 
-  // Find a good place to inject
-  // We look for the main react container that holds the file content
-  const targetContainers = [
-    document.querySelector('[class*="BlobContent-module__blobContentSection"]'), // new CSS modules UI
-    document.querySelector('[class*="BlobViewContent-module__blobContainer"]'), // new CSS modules UI alternative
-    document.querySelector('[data-testid="repos-file-display"]'), // new UI
-    document.querySelector('main .Box'),                          // old UI fallback
-    document.querySelector('.js-blob-wrapper')                    // older UI fallback
-  ];
+    // Evaluate against schema
+    for (const cat in defaultOptions) {
+      if (defaultOptions[cat][ext] !== undefined) {
+        currentCategory = cat;
+        const userCat = config[cat] || defaultOptions[cat];
+        const isCatEnabled = userCat._enabled !== false;
+        const isExtEnabled = userCat[ext] !== false;
 
-  const targetContainer = targetContainers.find(c => c !== null);
+        if (isCatEnabled && isExtEnabled) {
+          isSupported = true;
+        }
+        break;
+      }
+    }
 
-  // Always attempt to hide native elements, because React might re-render them at any time during SPA navigation
-  if (targetContainer) {
-    const elementsToHide = [
-      targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
-      targetContainer.querySelector('.blankslate'),
-      targetContainer.querySelector('[class*="tooLargeError"]'),
-      targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
-      targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
-      targetContainer.querySelector('table.highlight'), // Raw code/text container
-      targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
+    if (!isSupported) {
+      if (existingContainer) existingContainer.remove();
+      return;
+    }
+
+    const isVideo = currentCategory === 'Video';
+    const isAudio = currentCategory === 'Audio';
+    const isPdf = currentCategory === 'PDF Document';
+    const isSvg = ext === 'svg';
+    const isImage = currentCategory === 'Image & Vectors' && !isSvg;
+    const isOffice = currentCategory === 'Office';
+    const isiWork = currentCategory === 'Apple iWork';
+    const isFont = currentCategory === 'Fonts';
+    const is3DModel = currentCategory === '3D Models';
+
+    // Calculate raw URL
+    // GitHub displays LFS pointers as text if you hit raw.githubusercontent.com directly
+    // It's safest to get the href from the official "Raw" button because it handles 
+    // LFS redirects (to media.githubusercontent.com) automatically.
+    let rawUrl = '';
+    const rawButton = document.querySelector('[data-testid="raw-button"]');
+    if (rawButton && rawButton.href) {
+      rawUrl = rawButton.href;
+    } else {
+      // Fallback: convert /blob/ to /raw/
+      rawUrl = window.location.href.replace('/blob/', '/raw/');
+    }
+
+    // Find a good place to inject
+    // We look for the main react container that holds the file content
+    const targetContainers = [
+      document.querySelector('[class*="BlobContent-module__blobContentSection"]'), // new CSS modules UI
+      document.querySelector('[class*="BlobViewContent-module__blobContainer"]'), // new CSS modules UI alternative
+      document.querySelector('[data-testid="repos-file-display"]'), // new UI
+      document.querySelector('main .Box'),                          // old UI fallback
+      document.querySelector('.js-blob-wrapper')                    // older UI fallback
     ];
 
-    elementsToHide.forEach(el => {
-      if (el && el.style.display !== 'none') {
-        el.style.setProperty('display', 'none', 'important');
-      }
-    });
+    const targetContainer = targetContainers.find(c => c !== null);
 
-    Array.from(document.querySelectorAll('a')).forEach(a => {
-      if (a.textContent.trim().toLowerCase() === 'view raw') {
-        const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
-        if (parentBlock && parentBlock.style.display !== 'none') {
-          parentBlock.style.setProperty('display', 'none', 'important');
-        } else if (a.style.display !== 'none') {
-          a.style.setProperty('display', 'none', 'important');
+    // Always attempt to hide native elements, because React might re-render them at any time during SPA navigation
+    if (targetContainer) {
+      const elementsToHide = [
+        targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'), // blank slate wrapper
+        targetContainer.querySelector('.blankslate'),
+        targetContainer.querySelector('[class*="tooLargeError"]'),
+        targetContainer.querySelector('[data-testid="blob-viewer-container"]'), // New React UI
+        targetContainer.querySelector('.js-blob-wrapper'), // Older UI text viewer
+        targetContainer.querySelector('table.highlight'), // Raw code/text container
+        targetContainer.querySelector('[data-testid="repo-file-blob"] > div') // inner blob containing text
+      ];
+
+      elementsToHide.forEach(el => {
+        if (el && el.style.display !== 'none') {
+          el.style.setProperty('display', 'none', 'important');
         }
-      }
-    });
-  }
+      });
 
-  // Check if we already injected for this exact URL
-  if (existingContainer) {
-    if (existingContainer.dataset.url === rawUrl) {
-      // Ensure the container is still inside the current targetContainer 
-      // (sometimes React recreates the DOM but leaves our element dangling or we just want to ensure it's visible)
-      if (targetContainer && existingContainer.parentElement !== targetContainer && existingContainer.parentElement !== targetContainer.parentElement) {
-        // It's detached from the current valid container, so remove it and recreate
-        existingContainer.remove();
-      } else {
-        return;
-      }
-    } else {
-      // Container exists but URL doesn't match (SPA navigation), so remove it
-      existingContainer.remove();
+      Array.from(document.querySelectorAll('a')).forEach(a => {
+        if (a.textContent.trim().toLowerCase() === 'view raw') {
+          const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
+          if (parentBlock && parentBlock.style.display !== 'none') {
+            parentBlock.style.setProperty('display', 'none', 'important');
+          } else if (a.style.display !== 'none') {
+            a.style.setProperty('display', 'none', 'important');
+          }
+        }
+      });
     }
-  }
 
-  if (!targetContainer) {
-    console.warn('[GitHub Raw Preview Extension] Waiting for suitable DOM container to inject preview.');
-    return;
-  }
+    // Check if we already injected for this exact URL
+    if (existingContainer) {
+      if (existingContainer.dataset.url === rawUrl) {
+        // Ensure the container is still inside the current targetContainer 
+        // (sometimes React recreates the DOM but leaves our element dangling or we just want to ensure it's visible)
+        if (targetContainer && existingContainer.parentElement !== targetContainer && existingContainer.parentElement !== targetContainer.parentElement) {
+          // It's detached from the current valid container, so remove it and recreate
+          existingContainer.remove();
+        } else {
+          return;
+        }
+      } else {
+        // Container exists but URL doesn't match (SPA navigation), so remove it
+        existingContainer.remove();
+      }
+    }
 
-  console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
+    if (!targetContainer) {
+      console.warn('[GitHub Raw Preview Extension] Waiting for suitable DOM container to inject preview.');
+      return;
+    }
 
-  // Create container
-  const container = document.createElement('div');
-  container.id = 'gh-raw-preview-container';
-  container.dataset.url = rawUrl;
-  container.style.cssText = `
+    console.log(`[GitHub Raw Preview Extension] Detected ${ext} file, injecting preview...`);
+
+    // Create container
+    const container = document.createElement('div');
+    container.id = 'gh-raw-preview-container';
+    container.dataset.url = rawUrl;
+    container.style.cssText = `
     width: 100%;
     margin-top: 16px;
     padding: 16px;
@@ -133,50 +165,50 @@ function injectPreview() {
     border-radius: 6px;
   `;
 
-  if (isVideo) {
-    const video = document.createElement('video');
-    video.src = rawUrl;
-    video.controls = true;
-    video.style.cssText = `
+    if (isVideo) {
+      const video = document.createElement('video');
+      video.src = rawUrl;
+      video.controls = true;
+      video.style.cssText = `
       max-width: 100%;
       max-height: 80vh;
       border-radius: 6px;
       outline: none;
     `;
-    container.appendChild(video);
-  } else if (isAudio) {
-    const audio = document.createElement('audio');
-    audio.src = rawUrl;
-    audio.controls = true;
-    audio.style.cssText = `
+      container.appendChild(video);
+    } else if (isAudio) {
+      const audio = document.createElement('audio');
+      audio.src = rawUrl;
+      audio.controls = true;
+      audio.style.cssText = `
       width: 100%;
       margin-top: 10px;
       outline: none;
     `;
-    container.appendChild(audio);
-  } else if (isPdf || isSvg) {
-    const iframe = document.createElement('iframe');
-    iframe.src = rawUrl;
-    iframe.style.cssText = `
+      container.appendChild(audio);
+    } else if (isPdf || isSvg) {
+      const iframe = document.createElement('iframe');
+      iframe.src = rawUrl;
+      iframe.style.cssText = `
       width: 100%;
       height: 85vh;
       border: none;
       border-radius: 6px;
       background: white; /* viewer expectations */
     `;
-    container.appendChild(iframe);
-  } else if (isOffice) {
-    // Microsoft Office Viewer fails on github.com redirects. We must convert it to the direct raw.githubusercontent.com URL.
-    let officeRawUrl = rawUrl;
-    if (officeRawUrl.startsWith('https://github.com/')) {
-      officeRawUrl = officeRawUrl.replace('https://github.com/', 'https://raw.githubusercontent.com/').replace('/raw/', '/').replace('/refs/heads/', '/');
-    }
+      container.appendChild(iframe);
+    } else if (isOffice) {
+      // Microsoft Office Viewer fails on github.com redirects. We must convert it to the direct raw.githubusercontent.com URL.
+      let officeRawUrl = rawUrl;
+      if (officeRawUrl.startsWith('https://github.com/')) {
+        officeRawUrl = officeRawUrl.replace('https://github.com/', 'https://raw.githubusercontent.com/').replace('/raw/', '/').replace('/refs/heads/', '/');
+      }
 
-    const separator = officeRawUrl.includes('?') ? '&' : '?';
-    const noCacheUrl = `${officeRawUrl}${separator}cb=${Date.now()}`;
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(noCacheUrl)}`;
-    iframe.style.cssText = `
+      const separator = officeRawUrl.includes('?') ? '&' : '?';
+      const noCacheUrl = `${officeRawUrl}${separator}cb=${Date.now()}`;
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(noCacheUrl)}`;
+      iframe.style.cssText = `
       width: 100%;
       height: 85vh;
       border: none;
@@ -184,22 +216,22 @@ function injectPreview() {
       background: white;
       display: block;
     `;
-    container.style.flexDirection = 'column';
-    container.style.padding = '0';
-    container.style.border = '1px solid var(--borderColor-default, #30363d)';
-    container.style.overflow = 'hidden';
+      container.style.flexDirection = 'column';
+      container.style.padding = '0';
+      container.style.border = '1px solid var(--borderColor-default, #30363d)';
+      container.style.overflow = 'hidden';
 
-    const fallbackAlert = document.createElement('div');
-    fallbackAlert.innerHTML = `
+      const fallbackAlert = document.createElement('div');
+      fallbackAlert.innerHTML = `
       <div style="padding: 12px 16px; background-color: var(--bgColor-attention-muted, rgba(187,128,9,0.15)); color: var(--fgColor-attention, #d29922); font-size: 13px; text-align: center; border-top: 1px solid var(--borderColor-default, #30363d); border-radius: 0 0 6px 6px; width: 100%; box-sizing: border-box;">
         <strong>Note:</strong> Microsoft Viewer cannot access private repositories. If you see an error above, <a href="${rawUrl}" download style="color: var(--fgColor-accent, #58a6ff); font-weight: bold; text-decoration: underline;">click here to download</a> natively.
       </div>
     `;
-    container.appendChild(iframe);
-    container.appendChild(fallbackAlert);
-  } else if (isiWork) {
-    // Graceful fallback for iWork since there is no web viewer. 
-    container.style.cssText = `
+      container.appendChild(iframe);
+      container.appendChild(fallbackAlert);
+    } else if (isiWork) {
+      // Graceful fallback for iWork since there is no web viewer. 
+      container.style.cssText = `
       width: 100%;
       margin-top: 16px;
       padding: 40px 20px;
@@ -213,8 +245,8 @@ function injectPreview() {
       border-radius: 6px;
       text-align: center;
     `;
-    const message = document.createElement('div');
-    message.innerHTML = `
+      const message = document.createElement('div');
+      message.innerHTML = `
       <h3 style="margin-bottom: 8px; color: var(--fgColor-default, #c9d1d9);">🍏 Apple iWork File Captured</h3>
       <p style="color: var(--fgColor-muted, #8b949e); margin-bottom: 16px; max-width: 500px;">
         Web browsers cannot natively preview <strong>.pages</strong>, <strong>.numbers</strong>, or <strong>.keynote</strong> files. The extension has successfully prevented the forced download.
@@ -224,21 +256,21 @@ function injectPreview() {
          <a href="${rawUrl}" download style="padding: 6px 12px; background-color: #238636; color: white; text-decoration: none; border: 1px solid rgba(240, 246, 252, 0.1); border-radius: 6px; font-weight: 500;">Download File</a>
       </div>
     `;
-    container.appendChild(message);
-  } else if (isImage) {
-    const img = document.createElement('img');
-    img.src = rawUrl;
-    img.style.cssText = `
+      container.appendChild(message);
+    } else if (isImage) {
+      const img = document.createElement('img');
+      img.src = rawUrl;
+      img.style.cssText = `
       max-width: 100%;
       max-height: 85vh;
       border-radius: 6px;
       object-fit: contain;
     `;
-    container.appendChild(img);
-  } else if (isFont) {
-    const iframe = document.createElement('iframe');
-    const fontFormat = ext === 'ttf' ? 'truetype' : ext === 'otf' ? 'opentype' : ext;
-    const srcDoc = `
+      container.appendChild(img);
+    } else if (isFont) {
+      const iframe = document.createElement('iframe');
+      const fontFormat = ext === 'ttf' ? 'truetype' : ext === 'otf' ? 'opentype' : ext;
+      const srcDoc = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -277,18 +309,18 @@ function injectPreview() {
       </body>
       </html>
     `;
-    iframe.srcdoc = srcDoc;
-    iframe.style.cssText = `
+      iframe.srcdoc = srcDoc;
+      iframe.style.cssText = `
       width: 100%;
       height: 60vh;
       border: none;
       border-radius: 6px;
       background: #0d1117;
     `;
-    container.appendChild(iframe);
-  } else if (is3DModel) {
-    const iframe = document.createElement('iframe');
-    const srcDoc = `
+      container.appendChild(iframe);
+    } else if (is3DModel) {
+      const iframe = document.createElement('iframe');
+      const srcDoc = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -316,24 +348,26 @@ function injectPreview() {
       </body>
       </html>
     `;
-    iframe.srcdoc = srcDoc;
-    iframe.style.cssText = `
+      iframe.srcdoc = srcDoc;
+      iframe.style.cssText = `
       width: 100%;
       height: 70vh;
       border: none;
       border-radius: 6px;
       background: #161b22;
     `;
-    container.appendChild(iframe);
-  }
+      container.appendChild(iframe);
+    }
 
-  // Inject it
-  // Prepend inside the file container so it shows immediately below the toolbar
-  if (targetContainer.classList.contains('Box')) {
-    targetContainer.parentElement.insertBefore(container, targetContainer);
-  } else {
-    targetContainer.prepend(container);
-  }
+    // Inject it
+    // Inject it
+    // Prepend inside the file container so it shows immediately below the toolbar
+    if (targetContainer.classList.contains('Box')) {
+      targetContainer.parentElement.insertBefore(container, targetContainer);
+    } else {
+      targetContainer.prepend(container);
+    }
+  });
 }
 
 // Observe URL changes for SPAs (GitHub's React routing)
