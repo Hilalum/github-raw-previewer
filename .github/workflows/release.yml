@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Package extension
+        run: |
+          cd extension
+          zip -r ../github-raw-previewer-${{ steps.version.outputs.VERSION }}.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "GitHub Raw Previewer ${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## 📦 Installation
+            1. Download `github-raw-previewer-${{ steps.version.outputs.VERSION }}.zip` below
+            2. Extract to a permanent folder
+            3. Go to `chrome://extensions` → Enable **Developer mode**
+            4. Click **Load unpacked** → Select the extracted folder
+            5. Refresh your GitHub tabs. Done! 🎉
+          files: github-raw-previewer-${{ steps.version.outputs.VERSION }}.zip
+          draft: false
+          prerelease: false
