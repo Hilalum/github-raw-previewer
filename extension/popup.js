@@ -1,7 +1,7 @@
 const defaultOptions = {
     "Video": { _enabled: true, mp4: true, webm: true, ogg: true, mov: true },
     "Audio": { _enabled: true, mp3: true, wav: true, flac: true, m4a: true, aac: true },
-    "Image & Vectors": { _enabled: true, webp: true, bmp: true, svg: true, tiff: true, tif: true, heic: true },
+    "Image & Vectors": { _enabled: true, bmp: true, tiff: true, tif: true, heic: true },
     "PDF Document": { _enabled: true, pdf: true },
     "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
     "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
@@ -64,6 +64,11 @@ function renderUI() {
         checkbox.addEventListener('change', (e) => {
             currentConfig[category]._enabled = e.target.checked;
             saveConfig();
+
+            // If disabled, force close the accordion
+            if (!e.target.checked) {
+                row.classList.remove('open');
+            }
         });
 
         // Prevent expanding accordion when interacting with the toggle
@@ -77,6 +82,9 @@ function renderUI() {
         header.appendChild(toggleWrap);
 
         header.addEventListener('click', () => {
+            // If disabled, do not allow expanding
+            if (!checkbox.checked) return;
+
             const isCurrentlyOpen = row.classList.contains('open');
             // Close all
             document.querySelectorAll('.category-row').forEach(r => r.classList.remove('open'));

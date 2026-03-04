@@ -8,7 +8,7 @@ const CONTAINER_ID = 'gh-raw-preview-container';
 const DEFAULT_OPTIONS = {
   "Video": { _enabled: true, mp4: true, webm: true, ogg: true, mov: true },
   "Audio": { _enabled: true, mp3: true, wav: true, flac: true, m4a: true, aac: true },
-  "Image & Vectors": { _enabled: true, webp: true, bmp: true, svg: true, tiff: true, tif: true, heic: true },
+  "Image & Vectors": { _enabled: true, bmp: true, tiff: true, tif: true, heic: true },
   "PDF Document": { _enabled: true, pdf: true },
   "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
   "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
@@ -70,7 +70,12 @@ function hideNativeElements(targetContainer) {
     targetContainer.querySelector('[class*="react-blob-print-hide"]'),
     targetContainer.querySelector('[class*="CodeMirror"]'),
     targetContainer.querySelector('section[aria-labelledby]'),  // React code section wrapper
-    targetContainer.querySelector('[class*="react-blob-header"]')?.nextElementSibling  // content after header
+    targetContainer.querySelector('[class*="react-blob-header"]')?.nextElementSibling,  // content after header
+    // Native PDF viewer components
+    targetContainer.querySelector('[data-testid="file-display-pdf"]'),
+    targetContainer.querySelector('.react-pdf-viewer'),
+    targetContainer.querySelector('embed[type="application/pdf"]'),
+    targetContainer.querySelector('iframe[src*="pdf"]')
   ];
 
   elementsToHide.forEach(el => {
@@ -183,8 +188,7 @@ function injectPreview() {
       const isVideo = currentCategory === 'Video';
       const isAudio = currentCategory === 'Audio';
       const isPdf = currentCategory === 'PDF Document';
-      const isSvg = ext === 'svg';
-      const isImage = currentCategory === 'Image & Vectors' && !isSvg;
+      const isImage = currentCategory === 'Image & Vectors';
       const isOffice = currentCategory === 'Office';
       const isFont = currentCategory === 'Fonts';
       const is3DModel = currentCategory === '3D Models';
@@ -218,7 +222,7 @@ function injectPreview() {
         audio.controls = true;
         audio.style.cssText = 'width:100%;margin-top:10px;outline:none;';
         container.appendChild(audio);
-      } else if (isPdf || isSvg) {
+      } else if (isPdf) {
         const iframe = document.createElement('iframe');
         iframe.src = rawUrl;
         iframe.style.cssText = 'width:100%;height:85vh;border:none;border-radius:6px;background:white;';

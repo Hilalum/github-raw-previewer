@@ -51,7 +51,7 @@
 | **🎵 高保真音乐** | `.mp3`, `.wav`, `.flac` | [`test.mp3`](./test_files/test.mp3) • [`test.wav`](./test_files/test.wav) • [`test.flac`](./test_files/test.flac) |
 | **📄 经典出版物** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
 | **📊 Office 办公套件** | `.doc`, `.docx`, `.ppt`, `.pptx`, `.xls`, `.xlsx` | [`test.docx`](./test_files/test.docx) • [`test.pptx`](./test_files/test.pptx) • [`test.xlsx`](./test_files/test.xlsx) |
-| **🖼️ 高清无损及工程图** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
+| **🖼️ 高清无损及工程图** | `.tif`, `.tiff`, `.bmp`, `.heic` | [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) |
 | **🧊 次世代互动 3D 引擎** | `.glb` | [`test.glb`](./test_files/test.glb) |
 | **🅰️ Web 原生前端极客字库** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
 
