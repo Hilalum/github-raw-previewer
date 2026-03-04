@@ -5,7 +5,7 @@ const defaultOptions = {
     "PDF Document": { _enabled: true, pdf: true },
     "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
     "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
-    "3D Models": { _enabled: true, gltf: true, glb: true, obj: true, stl: true }
+    "3D Models": { _enabled: true, glb: true }
 };
 
 let currentConfig = {};

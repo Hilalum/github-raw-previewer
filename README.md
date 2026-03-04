@@ -50,7 +50,7 @@ This clutters your computer's `Downloads/` directory and wastes time, especially
 | **📄 Standard Documents** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
 | **📊 Microsoft Office** | `.doc`, `.docx`, `.ppt`, `.pptx`, `.xls`, `.xlsx` | [`test.docx`](./test_files/test.docx) • [`test.pptx`](./test_files/test.pptx) • [`test.xlsx`](./test_files/test.xlsx) |
 | **🖼️ Complex Images** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
-| **🧊 Native 3D Models** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
+| **🧊 Native 3D Models** | `.glb` | [`test.glb`](./test_files/test.glb) |
 | **🅰️ Web Typography** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
 
 *(Note: GitHub natively supports CSV and Markdown previews, so our extension explicitly leaves those pristine and untouched without interference.)*

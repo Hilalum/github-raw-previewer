@@ -12,7 +12,7 @@ const DEFAULT_OPTIONS = {
   "PDF Document": { _enabled: true, pdf: true },
   "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
   "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
-  "3D Models": { _enabled: true, gltf: true, glb: true, obj: true, stl: true }
+  "3D Models": { _enabled: true, glb: true }
 };
 
 function getExtension(filename) {
@@ -64,7 +64,13 @@ function hideNativeElements(targetContainer) {
     targetContainer.querySelector('[data-testid="blob-viewer-container"]'),
     targetContainer.querySelector('.js-blob-wrapper'),
     targetContainer.querySelector('table.highlight'),
-    targetContainer.querySelector('[data-testid="repo-file-blob"] > div')
+    targetContainer.querySelector('[data-testid="repo-file-blob"] > div'),
+    // Code editor / syntax-highlighted source code views (for text-based formats like .gltf, .svg, .obj)
+    targetContainer.querySelector('[class*="react-code-text"]'),
+    targetContainer.querySelector('[class*="react-blob-print-hide"]'),
+    targetContainer.querySelector('[class*="CodeMirror"]'),
+    targetContainer.querySelector('section[aria-labelledby]'),  // React code section wrapper
+    targetContainer.querySelector('[class*="react-blob-header"]')?.nextElementSibling  // content after header
   ];
 
   elementsToHide.forEach(el => {
@@ -72,6 +78,16 @@ function hideNativeElements(targetContainer) {
       el.style.setProperty('display', 'none', 'important');
     }
   });
+
+  // Also hide any direct children of the blob container that aren't our preview
+  const blobEl = targetContainer.querySelector('[data-testid="repo-file-blob"]');
+  if (blobEl) {
+    Array.from(blobEl.children).forEach(child => {
+      if (child.id !== 'gh-raw-preview-container' && child.style.display !== 'none') {
+        child.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
 
   document.querySelectorAll('a').forEach(a => {
     if (a.textContent.trim().toLowerCase() === 'view raw') {

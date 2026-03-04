@@ -52,7 +52,7 @@
 | **📄 经典出版物** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
 | **📊 Office 办公套件** | `.doc`, `.docx`, `.ppt`, `.pptx`, `.xls`, `.xlsx` | [`test.docx`](./test_files/test.docx) • [`test.pptx`](./test_files/test.pptx) • [`test.xlsx`](./test_files/test.xlsx) |
 | **🖼️ 高清无损及工程图** | `.svg`, `.tif`, `.tiff`, `.bmp`, `.webp`, `.heic` | [`test.svg`](./test_files/test.svg) • [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) • [`test.webp`](./test_files/test.webp) |
-| **🧊 次世代互动 3D 引擎** | `.gltf`, `.glb`, `.obj`, `.stl` | [`test.gltf`](./test_files/test.gltf) • [`test.glb`](./test_files/test.glb) • [`test.obj`](./test_files/test.obj) • [`test.stl`](./test_files/test.stl) |
+| **🧊 次世代互动 3D 引擎** | `.glb` | [`test.glb`](./test_files/test.glb) |
 | **🅰️ Web 原生前端极客字库** | `.ttf`, `.otf`, `.woff`, `.woff2` | [`test.ttf`](./test_files/test.ttf) • [`test.otf`](./test_files/test.otf) • [`test.woff`](./test_files/test.woff) |
 
 *(极客声明: 因为察觉到了 GitHub 官方其实自带对于 Markdown 及 CSV 数据库列表的微弱预览能力，为了保证生态和谐不干涉不冲突，我们的黑科技解析框架会非常智能地对这两种常见短平快类别执行免密通行放行。)*
