@@ -47,7 +47,6 @@ This clutters your computer's `Downloads/` directory and wastes time, especially
 | :--- | :--- | :--- |
 | **🎥 High-Def Video** | `.mp4`, `.webm`, `.mov` | [`test.mp4`](./test_files/test.mp4) • [`test.webm`](./test_files/test.webm) • [`test.mov`](./test_files/test.mov) |
 | **🎵 Lossless Audio** | `.mp3`, `.wav`, `.flac` | [`test.mp3`](./test_files/test.mp3) • [`test.wav`](./test_files/test.wav) • [`test.flac`](./test_files/test.flac) |
-| **📄 Standard Documents** | `.pdf` | [`test.pdf`](./test_files/test.pdf) |
 | **📊 Microsoft Office** | `.doc`, `.docx`, `.ppt`, `.pptx`, `.xls`, `.xlsx` | [`test.docx`](./test_files/test.docx) • [`test.pptx`](./test_files/test.pptx) • [`test.xlsx`](./test_files/test.xlsx) |
 | **🖼️ Complex Images** | `.tif`, `.tiff`, `.bmp`, `.heic` | [`test.tiff`](./test_files/test.tiff) • [`test.bmp`](./test_files/test.bmp) |
 | **🧊 Native 3D Models** | `.glb` | [`test.glb`](./test_files/test.glb) |

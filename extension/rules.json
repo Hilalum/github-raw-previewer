@@ -1,36 +1,5 @@
 [
     {
-        "id": 1,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "application/pdf"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.pdf*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
         "id": 2,
         "priority": 10,
         "action": {
@@ -54,38 +23,6 @@
                 "main_frame",
                 "sub_frame",
                 "media",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 3,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "image/svg+xml"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.svg*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "image",
                 "xmlhttprequest"
             ],
             "requestDomains": [
@@ -254,99 +191,6 @@
         }
     },
     {
-        "id": 10,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "application/vnd.apple.pages"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.pages*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 11,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "application/vnd.apple.numbers"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.numbers*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 12,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "application/vnd.apple.keynote"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.key*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
         "id": 13,
         "priority": 10,
         "action": {
@@ -380,7 +224,7 @@
             ]
         },
         "condition": {
-            "regexFilter": "^https?://raw\\.githubusercontent\\.com/.*\\.(stl|obj|gltf|glb)+$",
+            "regexFilter": "^https?://raw\\.githubusercontent\\.com/.*\\.(glb)+$",
             "resourceTypes": [
                 "main_frame",
                 "sub_frame",
@@ -401,7 +245,7 @@
             ]
         },
         "condition": {
-            "regexFilter": "^https?://media\\.githubusercontent\\.com/.*\\.(ttf|otf|woff|woff2|stl|obj|gltf|glb)+.*$",
+            "regexFilter": "^https?://media\\.githubusercontent\\.com/.*\\.(ttf|otf|woff|woff2|glb)+.*$",
             "resourceTypes": [
                 "main_frame",
                 "sub_frame",

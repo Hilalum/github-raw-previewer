@@ -2,7 +2,6 @@ const defaultOptions = {
     "Video": { _enabled: true, mp4: true, webm: true, ogg: true, mov: true },
     "Audio": { _enabled: true, mp3: true, wav: true, flac: true, m4a: true, aac: true },
     "Image & Vectors": { _enabled: true, bmp: true, tiff: true, tif: true, heic: true },
-    "PDF Document": { _enabled: true, pdf: true },
     "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
     "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
     "3D Models": { _enabled: true, glb: true }
