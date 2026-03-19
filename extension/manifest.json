@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GitHub Raw Previewer",
-  "version": "2026.3.4",
+  "version": "2026.3.5",
   "description": "Inline preview for Videos, Audio, Office docs, Fonts and 3D Models on GitHub. Stop forced downloads forever!",
   "permissions": [
     "declarativeNetRequest",

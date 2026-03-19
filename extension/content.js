@@ -272,13 +272,57 @@ function injectPreview() {
         const iframe = document.createElement('iframe');
         iframe.srcdoc = `
           <!DOCTYPE html><html><head>
-            <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"><\/script>
             <style>
-              body { margin:0; padding:0; width:100vw; height:100vh; background:#161b22; display:flex; justify-content:center; align-items:center; }
-              model-viewer { width:100%; height:100%; --poster-color:transparent; }
+              body {
+                margin:0;
+                padding:24px;
+                width:100vw;
+                height:100vh;
+                box-sizing:border-box;
+                background:#161b22;
+                color:#c9d1d9;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+              }
+              .card {
+                width:min(520px, 100%);
+                border:1px solid #30363d;
+                border-radius:12px;
+                background:#0d1117;
+                padding:24px;
+                text-align:center;
+                box-shadow:0 16px 40px rgba(0,0,0,0.35);
+              }
+              h2 {
+                margin:0 0 12px;
+                font-size:24px;
+              }
+              p {
+                margin:0 0 16px;
+                line-height:1.6;
+                color:#8b949e;
+              }
+              a {
+                display:inline-block;
+                padding:10px 16px;
+                border-radius:999px;
+                color:#ffffff;
+                background:#238636;
+                text-decoration:none;
+                font-weight:600;
+              }
             </style>
           </head><body>
-            <model-viewer src="${rawUrl}" auto-rotate camera-controls shadow-intensity="1" exposure="1.2" environment-image="neutral" camera-orbit="45deg 55deg auto"></model-viewer>
+            <div class="card">
+              <h2>3D model preview unavailable</h2>
+              <p>
+                Chrome Web Store forbids remote hosted code in Manifest V3 extensions.
+                This viewer was removed to keep the extension compliant.
+              </p>
+              <a href="${rawUrl}" target="_blank" rel="noopener noreferrer">Open raw 3D file</a>
+            </div>
           </body></html>
         `;
         iframe.style.cssText = 'width:100%;height:70vh;border:none;border-radius:6px;background:#161b22;';
