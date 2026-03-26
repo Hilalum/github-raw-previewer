@@ -9,7 +9,7 @@
     <a href="https://github.com/Hilalum/github-raw-previewer/stargazers"><img src="https://img.shields.io/github/stars/Hilalum/github-raw-previewer?style=for-the-badge&color=ffd700&label=Stars" alt="Stars"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT"></a>
     <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg?style=for-the-badge" alt="Manifest V3">
-    <a href="#"><img src="https://img.shields.io/badge/Chrome_Web_Store-Coming_Soon-orange.svg?style=for-the-badge" alt="Chrome Web Store"></a>
+    <a href="https://chromewebstore.google.com/search/GitHub%20Raw%20Previewer"><img src="https://img.shields.io/badge/Chrome_Web_Store-Available_Now-green.svg?style=for-the-badge" alt="Chrome Web Store"></a>
     <a href="https://github.com/Hilalum/github-raw-previewer/releases"><img src="https://img.shields.io/github/v/release/Hilalum/github-raw-previewer?style=for-the-badge&color=2ea44f" alt="Latest Release"></a>
   </p>
 
@@ -56,16 +56,24 @@ This clutters your computer's `Downloads/` directory and wastes time, especially
 
 ---
 
-## 🛠️ Quick Installation
+## 🛠️ Installation
 
-### 📥 Install via Release (.zip)
+### Install from Chrome Web Store
+1. Open the [Chrome Web Store listing](https://chromewebstore.google.com/search/GitHub%20Raw%20Previewer).
+2. Search for **GitHub Raw Previewer** if the listing is not opened directly.
+3. Click **Add to Chrome**.
+4. Refresh any open GitHub tabs.
+
+### Manual install from Release (.zip)
 1. Go to the [Releases](https://github.com/Hilalum/github-raw-previewer/releases) page.
 2. Download the latest `github-raw-previewer-vX.X.X.zip`.
 3. Extract the ZIP file to a permanent folder on your machine.
-4. Open Chrome/Edge and navigate to `chrome://extensions` or `edge://extensions`.
-5. Enable **Developer mode** in the top-right corner.
+4. Open Chrome or Edge and navigate to `chrome://extensions` or `edge://extensions`.
+5. Enable **Developer mode**.
 6. Click **Load unpacked** and select the extracted `extension` folder.
-7. You're done! Refresh your GitHub tabs.
+7. Refresh your GitHub tabs.
+
+Edge users can also install the Chrome build. If Edge blocks the install, enable **Allow extensions from other stores** first.
 
 ---
 
