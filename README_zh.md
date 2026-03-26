@@ -9,7 +9,7 @@
     <a href="https://github.com/Hilalum/github-raw-previewer/stargazers"><img src="https://img.shields.io/github/stars/Hilalum/github-raw-previewer?style=for-the-badge&color=ffd700&label=Stars" alt="Stars"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT"></a>
     <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg?style=for-the-badge" alt="Manifest V3">
-    <a href="https://chromewebstore.google.com/search/GitHub%20Raw%20Previewer"><img src="https://img.shields.io/badge/Chrome_Web_Store-Available_Now-green.svg?style=for-the-badge" alt="Chrome Web Store"></a>
+    <a href="https://chromewebstore.google.com/detail/github-raw-previewer/bojogbccnklgbfdcafbhinglmcahckmn"><img src="https://img.shields.io/badge/Chrome_Web_Store-Available_Now-green.svg?style=for-the-badge" alt="Chrome Web Store"></a>
     <a href="https://github.com/Hilalum/github-raw-previewer/releases"><img src="https://img.shields.io/github/v/release/Hilalum/github-raw-previewer?style=for-the-badge&color=2ea44f" alt="最新发版"></a>
   </p>
 
@@ -61,10 +61,9 @@
 ## 🛠️ 安装方式
 
 ### 通过 Chrome Web Store 安装
-1. 打开 [Chrome Web Store 页面](https://chromewebstore.google.com/search/GitHub%20Raw%20Previewer)。
-2. 如果没有直接进入详情页，就搜索 **GitHub Raw Previewer**。
-3. 点击 **添加至 Chrome**。
-4. 刷新已经打开的 GitHub 页面即可使用。
+1. 打开 [Chrome Web Store 页面](https://chromewebstore.google.com/detail/github-raw-previewer/bojogbccnklgbfdcafbhinglmcahckmn)。
+2. 点击 **添加至 Chrome**。
+3. 刷新已经打开的 GitHub 页面即可使用。
 
 ### 通过 Release 手动安装
 1. 打开 [Releases](https://github.com/Hilalum/github-raw-previewer/releases) 页面。

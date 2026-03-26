@@ -9,7 +9,7 @@
     <a href="https://github.com/Hilalum/github-raw-previewer/stargazers"><img src="https://img.shields.io/github/stars/Hilalum/github-raw-previewer?style=for-the-badge&color=ffd700&label=Stars" alt="Stars"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT"></a>
     <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg?style=for-the-badge" alt="Manifest V3">
-    <a href="https://chromewebstore.google.com/search/GitHub%20Raw%20Previewer"><img src="https://img.shields.io/badge/Chrome_Web_Store-Available_Now-green.svg?style=for-the-badge" alt="Chrome Web Store"></a>
+    <a href="https://chromewebstore.google.com/detail/github-raw-previewer/bojogbccnklgbfdcafbhinglmcahckmn"><img src="https://img.shields.io/badge/Chrome_Web_Store-Available_Now-green.svg?style=for-the-badge" alt="Chrome Web Store"></a>
     <a href="https://github.com/Hilalum/github-raw-previewer/releases"><img src="https://img.shields.io/github/v/release/Hilalum/github-raw-previewer?style=for-the-badge&color=2ea44f" alt="Latest Release"></a>
   </p>
 
@@ -59,10 +59,9 @@ This clutters your computer's `Downloads/` directory and wastes time, especially
 ## 🛠️ Installation
 
 ### Install from Chrome Web Store
-1. Open the [Chrome Web Store listing](https://chromewebstore.google.com/search/GitHub%20Raw%20Previewer).
-2. Search for **GitHub Raw Previewer** if the listing is not opened directly.
-3. Click **Add to Chrome**.
-4. Refresh any open GitHub tabs.
+1. Open the [Chrome Web Store listing](https://chromewebstore.google.com/detail/github-raw-previewer/bojogbccnklgbfdcafbhinglmcahckmn).
+2. Click **Add to Chrome**.
+3. Refresh any open GitHub tabs.
 
 ### Manual install from Release (.zip)
 1. Go to the [Releases](https://github.com/Hilalum/github-raw-previewer/releases) page.
