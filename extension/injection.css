@@ -1,0 +1,18 @@
+/*
+ * Injected at document_start, before GitHub paints.
+ *
+ * Purpose: remove the flash of GitHub's "View raw" placeholder that used to be
+ * visible while the content script waited for the page to settle. Everything is
+ * scoped to html[data-grp-active], which content.js sets only while the current
+ * route is a supported blob page — so a page the extension does not handle is
+ * never touched.
+ *
+ * The fragments here must exist in extension/selectors.js (enforced by
+ * tools/check-consistency.mjs, so this file cannot drift from the contract).
+ */
+
+html[data-grp-active] [class*="tooLargeError"],
+html[data-grp-active] [class*="react-code-text"],
+html[data-grp-active] [class*="react-blob-print-hide"] {
+  display: none !important;
+}

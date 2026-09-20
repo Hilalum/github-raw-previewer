@@ -1,0 +1,142 @@
+/* viewer-font.css — themed via the `.light` / `.dark` class on <html>. */
+
+:root {
+  --bg: #0d1117;
+  --fg: #c9d1d9;
+  --muted: #8b949e;
+  --border: #30363d;
+  --link: #58a6ff;
+  --btn-bg: #238636;
+  --btn-fg: #ffffff;
+  --card: #161b22;
+}
+
+html.light {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --border: #d1d9e0;
+  --link: #0969da;
+  --btn-bg: #1f883d;
+  --btn-fg: #ffffff;
+  --card: #f6f8fa;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.specimen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.filename {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.block {
+  width: 100%;
+}
+
+h1 {
+  font-family: "GRPPreview", sans-serif;
+  font-size: clamp(28px, 5vw, 54px);
+  font-weight: 400;
+  line-height: 1.25;
+  margin: 0 0 16px;
+  word-break: break-word;
+}
+
+.charset {
+  font-family: "GRPPreview", sans-serif;
+  font-size: clamp(14px, 2.2vw, 22px);
+  line-height: 1.5;
+  margin: 0;
+  color: var(--fg);
+  word-break: break-word;
+}
+
+.sizes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.sizes span {
+  font-family: "GRPPreview", sans-serif;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.weights {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  font-family: "GRPPreview", sans-serif;
+  font-size: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.error-card {
+  max-width: 460px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 24px;
+  text-align: center;
+}
+
+.error-card h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.error-card p {
+  margin: 0 0 18px;
+  line-height: 1.6;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.error-card a {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}

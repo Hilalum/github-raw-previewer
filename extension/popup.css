@@ -1,238 +1,359 @@
-/* popup.css */
+/* popup.css — themable via CSS custom properties (light + dark). */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #0d1117;
+  --fg: #c9d1d9;
+  --muted: #8b949e;
+  --border: #30363d;
+  --row: #161b22;
+  --row-hover: #21262d;
+  --row-active: #0d1117;
+  --accent: #58a6ff;
+  --switch-off: #30363d;
+  --switch-on: #238636;
+  --knob: #8b949e;
+  --knob-on: #ffffff;
+  --scrollbar: #30363d;
+  --attention: rgba(187, 128, 9, 0.12);
+  --attention-border: #9e6a03;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff;
+    --fg: #1f2328;
+    --muted: #59636e;
+    --border: #d1d9e0;
+    --row: #f6f8fa;
+    --row-hover: #eef1f4;
+    --row-active: #ffffff;
+    --accent: #0969da;
+    --switch-off: #d1d9e0;
+    --switch-on: #1f883d;
+    --knob: #8c959f;
+    --knob-on: #ffffff;
+    --scrollbar: #d1d9e0;
+    --attention: rgba(187, 128, 9, 0.15);
+    --attention-border: #d4a72c;
+  }
+}
+
 html,
 body {
-    margin: 0;
-    padding: 0;
-    width: 320px;
-    height: 520px;
-    background-color: #0d1117;
-    color: #c9d1d9;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    overflow: hidden;
+  margin: 0;
+  padding: 0;
+  width: 320px;
 }
 
 body {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* No fixed height: a fixed 520px clipped content under large OS font scaling.
+     The middle section scrolls, so the popup can grow up to Chrome's cap. */
+  max-height: 560px;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 16px;
+  box-sizing: border-box;
+  font-size: 13px;
 }
 
-/* ── Header ── */
+a {
+  color: var(--accent);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
 .header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
 .header img {
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
 }
 
 .title-area h2 {
-    margin: 0;
-    font-size: 16px;
-    color: #c9d1d9;
+  margin: 0;
+  font-size: 16px;
+  color: var(--fg);
 }
 
 .version {
-    font-size: 11px;
-    color: #8b949e;
-    background: #21262d;
-    padding: 2px 6px;
-    border-radius: 10px;
-    display: inline-block;
-    margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--row);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-top: 4px;
 }
 
 .subtitle {
-    font-size: 13px;
-    color: #8b949e;
-    line-height: 1.4;
-    margin: 0 0 12px 0;
-    flex-shrink: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0 0 12px 0;
+  flex-shrink: 0;
 }
 
-/* ── Scrollable Middle Area ── */
+/* ── Diagnostic notice ──────────────────────────────────────────────────── */
+
+.notice {
+  margin: 0 0 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--attention-border);
+  border-radius: 4px;
+  background-color: var(--attention);
+  color: var(--fg);
+  font-size: 12px;
+  line-height: 1.45;
+  flex-shrink: 0;
+}
+
+/* ── Scrollable middle area ─────────────────────────────────────────────── */
+
 #categories-container {
-    flex: 1 1 0;
-    min-height: 0;
-    /* KEY: allows flex child to shrink below content size */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding-right: 2px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 380px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
 }
 
-#categories-container::-webkit-scrollbar {
-    width: 5px;
+#categories-container::-webkit-scrollbar,
+.extensions-list::-webkit-scrollbar {
+  width: 5px;
 }
 
-#categories-container::-webkit-scrollbar-track {
-    background: transparent;
+#categories-container::-webkit-scrollbar-track,
+.extensions-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-#categories-container::-webkit-scrollbar-thumb {
-    background-color: #30363d;
-    border-radius: 5px;
+#categories-container::-webkit-scrollbar-thumb,
+.extensions-list::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar);
+  border-radius: 5px;
 }
 
-/* ── Category Row (Accordion) ── */
+/* ── Category row ───────────────────────────────────────────────────────── */
+
 .category-row {
-    background-color: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    flex-shrink: 0;
+  background-color: var(--row);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 .category-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 9px 12px;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
 }
 
-.category-header:hover {
-    background-color: #21262d;
+.category-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
 }
 
-.category-title {
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: #c9d1d9;
-    gap: 8px;
-    flex: 1;
+.category-toggle:hover:not(:disabled) {
+  background-color: var(--row-hover);
 }
 
-/* Caret Icon */
+.category-toggle:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.category-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.category-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caret-wrap {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
 .caret {
-    fill: #8b949e;
-    transition: transform 0.2s;
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
+  fill: var(--muted);
+  transition: transform 0.2s;
+  width: 14px;
+  height: 14px;
 }
 
 .category-row.open .caret {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
-/* ── Extensions Sub-list ── */
+/* ── Format list (collapsed via max-height; inert when closed) ──────────── */
+
 .extensions-list {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.25s ease;
-    background-color: #0d1117;
-    border-top: 0px solid transparent;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  background-color: var(--row-active);
+  border-top: 0 solid transparent;
 }
 
 .category-row.open .extensions-list {
-    max-height: 300px;
-    /* Large enough to fit any sub-list */
-    border-top: 1px solid #30363d;
-    overflow-y: auto;
+  max-height: 300px;
+  border-top: 1px solid var(--border);
+  overflow-y: auto;
 }
 
-.extensions-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.extensions-list::-webkit-scrollbar-thumb {
-    background-color: #30363d;
-    border-radius: 4px;
+.disclosure {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  background-color: var(--attention);
 }
 
 .extension-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 14px 7px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 14px 7px 30px;
 }
 
 .extension-name {
-    font-size: 13px;
-    color: #8b949e;
-    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
-/* ── Toggle Switch ── */
+/* ── Switch ─────────────────────────────────────────────────────────────── */
+
 .switch {
-    position: relative;
-    display: inline-block;
-    width: 30px;
-    height: 17px;
-    flex-shrink: 0;
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  flex-shrink: 0;
 }
 
 .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #30363d;
-    transition: .25s;
-    border-radius: 17px;
+  position: absolute;
+  inset: 0;
+  background-color: var(--switch-off);
+  transition: 0.25s;
+  border-radius: 17px;
+  pointer-events: none;
 }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 11px;
-    width: 11px;
-    left: 3px;
-    bottom: 3px;
-    background-color: #8b949e;
-    transition: .25s;
-    border-radius: 50%;
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 11px;
+  width: 11px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--knob);
+  transition: 0.25s;
+  border-radius: 50%;
 }
 
-input:checked+.slider {
-    background-color: #238636;
+input:checked + .slider {
+  background-color: var(--switch-on);
 }
 
-input:checked+.slider:before {
-    transform: translateX(13px);
-    background-color: #ffffff;
+input:checked + .slider::before {
+  transform: translateX(13px);
+  background-color: var(--knob-on);
 }
 
-.header-switch-wrap {
-    display: flex;
-    align-items: center;
+/* The input is visually hidden, so the focus ring has to live on the slider. */
+input:focus-visible + .slider {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-/* ── Footer ── */
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+
 .footer {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #21262d;
-    font-size: 12px;
-    text-align: center;
-    flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--muted);
 }
 
 .footer a {
-    color: #58a6ff;
-    text-decoration: none;
+  color: var(--accent);
+  text-decoration: none;
 }
 
 .footer a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
+}
+
+.link-button {
+  margin: 0;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.link-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sep {
+  margin: 0 6px;
 }
