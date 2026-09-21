@@ -5,36 +5,183 @@ on:
     tags:
       - 'v*'
 
+# Needed by softprops/action-gh-release to create the release and upload the zip.
 permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  release:
+    name: package and publish
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
+      # Third-party actions are pinned to full commit SHAs (resolved via the
+      # GitHub API). The trailing comment records the human-readable version.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.3.0
 
-      - name: Get version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      # SECURITY: the tag name is attacker-influenced data (anyone who can push a
+      # tag controls it). It is handed to the shell through `env:` — never
+      # interpolated with `${{ }}` inside `run:` — and quoted on every use, so a
+      # tag like `v1"; rm -rf / #` is a string, not a command. It is also
+      # validated against a strict pattern before anything is built.
+      - name: Resolve and validate tag
+        id: tag
+        env:
+          # GITHUB_REF is expanded by the runner, not by GitHub Expressions.
+          TAG_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          case "$TAG_REF" in
+            refs/tags/*) ;;
+            *)
+              echo "::error::refusing to build: GITHUB_REF is not a tag ($TAG_REF)"
+              exit 1
+              ;;
+          esac
+
+          tag="${TAG_REF#refs/tags/}"
+          if ! printf '%s' "$tag" | grep -Eq '^v[0-9]+(\.[0-9]+)*$'; then
+            echo "::error::refusing to build: tag '$tag' does not match ^v[0-9]+(\.[0-9]+)*$"
+            exit 1
+          fi
+
+          version="${tag#v}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Validated tag: $tag (version $version)"
+
+      # The manifest is the version users actually get in chrome://extensions, so
+      # a mismatch means a release that lies about what it ships.
+      - name: Assert tag matches extension/manifest.json version
+        id: version_check
+        env:
+          TAG_VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          manifest_version="$(node -p "require('./extension/manifest.json').version")"
+          if [ "$manifest_version" != "$TAG_VERSION" ]; then
+            echo "::error::version mismatch: git tag says '$TAG_VERSION' but extension/manifest.json says '$manifest_version'"
+            exit 1
+          fi
+          echo "manifest_version=$manifest_version" >> "$GITHUB_OUTPUT"
+          echo "Version match: $manifest_version"
+
+      # Never publish an extension that fails the static checks.
+      - name: Consistency check
+        run: node tools/check-consistency.mjs
+
+      # Validates this workflow's own packaging rules (exclusion patterns,
+      # fail-closed verification, archive-root layout) before anything is built.
+      - name: Validate packaging rules
+        run: node tools/check-packaging.mjs
 
       - name: Package extension
+        id: package
+        env:
+          # All tag-derived values reach the shell through env and stay quoted.
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          cd extension
-          zip -r ../github-raw-previewer-${{ steps.version.outputs.VERSION }}.zip .
+          set -euo pipefail
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+          # Fail fast (and legibly) if the runner image ever loses zip/unzip,
+          # instead of half-building an artifact.
+          command -v zip >/dev/null || { echo "::error::zip is not installed on this runner"; exit 1; }
+          command -v unzip >/dev/null || { echo "::error::unzip is not installed on this runner"; exit 1; }
+
+          zip_name="github-raw-previewer-${TAG}.zip"
+          # The zip contains the CONTENTS of extension/, so manifest.json sits at
+          # the root of the extracted folder — the release notes must say so.
+          #
+          # Dev-junk exclusions are listed with AND without a leading `*/`, because
+          # `extension/_metadata/` lands at the archive ROOT as `_metadata/...`,
+          # which a bare `*/_metadata/*` pattern would not match. Bare `.*`
+          # patterns match at any depth (zip matches `*` across `/`).
+          #
+          # -X drops extra filesystem attributes, -FS makes re-runs replace stale
+          # entries instead of appending to them.
+          excludes=(
+            -x '.DS_Store'
+            -x '*/.DS_Store'
+            -x '_metadata'
+            -x '_metadata/*'
+            -x '*/_metadata/*'
+            -x '.*'
+            -x '*/.*'
+          )
+          (cd extension && zip -r -X -FS "../${zip_name}" . "${excludes[@]}")
+
+          test -f "$zip_name"
+
+          # Fail closed: the published zip is checked, not assumed. A leaked
+          # _metadata/.DS_Store or a manifest.json that is not at the archive root
+          # breaks the documented install steps, so it stops the release here.
+          if unzip -Z1 "$zip_name" | grep -E '(^|/)(_metadata|\.DS_Store)(/|$)|(^|/)\.'; then
+            echo "::error::dev junk (hidden files or _metadata/) leaked into ${zip_name}"
+            exit 1
+          fi
+          if ! unzip -Z1 "$zip_name" | grep -qx 'manifest.json'; then
+            echo "::error::manifest.json is not at the root of ${zip_name} — the release install steps would be wrong"
+            exit 1
+          fi
+          unzip -l "$zip_name"
+
+          sha256="$(sha256sum "$zip_name" | awk '{print $1}')"
+          echo "zip_name=$zip_name" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+          echo "SHA-256($zip_name) = $sha256"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.1
         with:
-          name: "GitHub Raw Previewer ${{ steps.version.outputs.VERSION }}"
-          body: |
-            ## 📦 Installation
-            1. Download `github-raw-previewer-${{ steps.version.outputs.VERSION }}.zip` below
-            2. Extract to a permanent folder
-            3. Go to `chrome://extensions` → Enable **Developer mode**
-            4. Click **Load unpacked** → Select the extracted folder
-            5. Refresh your GitHub tabs. Done! 🎉
-          files: github-raw-previewer-${{ steps.version.outputs.VERSION }}.zip
+          name: 'GitHub Raw Previewer ${{ steps.tag.outputs.tag }}'
+          files: ${{ steps.package.outputs.zip_name }}
           draft: false
           prerelease: false
+          body: |
+            ## 📦 Installation
+
+            1. Download `${{ steps.package.outputs.zip_name }}` below
+            2. Extract the zip to a permanent folder
+            3. Go to `chrome://extensions` → Enable **Developer mode**
+            4. Click **Load unpacked** → Select the folder you extracted in step 2
+
+               The archive contains the *contents* of the `extension/` directory, so
+               `manifest.json` sits directly inside the extracted folder.
+               **Select that folder itself** — the one containing `manifest.json`.
+               Do not select a parent folder or `extension/` inside a checkout:
+               Chrome rejects a folder whose `manifest.json` is not at its root.
+            5. Refresh your GitHub tabs. Done! 🎉
+
+            ## 🔐 Verify your download
+
+            ```text
+            sha256  ${{ steps.package.outputs.sha256 }}
+            ```
+
+            ```bash
+            # macOS / Linux
+            echo "${{ steps.package.outputs.sha256 }}  ${{ steps.package.outputs.zip_name }}" | shasum -a 256 -c -
+
+            # Windows (PowerShell)
+            (Get-FileHash .\${{ steps.package.outputs.zip_name }} -Algorithm SHA256).Hash.ToLower()
+            ```
+
+            ## 🏷️ Release info
+
+            | | |
+            | --- | --- |
+            | Tag | `${{ steps.tag.outputs.tag }}` |
+            | Manifest version | `${{ steps.version_check.outputs.manifest_version }}` |
+            | SHA-256 | `${{ steps.package.outputs.sha256 }}` |
+
+            Built and validated by the `Release` workflow (tag shape, tag ↔
+            `extension/manifest.json` version match, and the consistency check all
+            passed before packaging).

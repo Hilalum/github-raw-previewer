@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="utf-8">
+  <title>Font preview</title>
+  <link rel="stylesheet" href="viewer-font.css">
+</head>
+
+<body>
+  <main class="specimen" id="specimen" hidden>
+    <p class="filename" id="filename"></p>
+
+    <section class="block">
+      <h1 id="headline">A Quick Brown Fox Jumps Over The Lazy Dog</h1>
+      <p class="charset" id="charset"></p>
+    </section>
+
+    <section class="sizes" id="sizes"></section>
+
+    <section class="weights">
+      <span style="font-weight:300">300 Light</span>
+      <span style="font-weight:400">400 Regular</span>
+      <span style="font-weight:700">700 Bold</span>
+    </section>
+  </main>
+
+  <main class="error" id="error" hidden>
+    <div class="error-card">
+      <h2>Font preview unavailable</h2>
+      <p id="error-message">This font could not be loaded in the browser.</p>
+      <a id="error-link" href="#" target="_blank" rel="noopener noreferrer">Open the raw font file</a>
+    </div>
+  </main>
+
+  <script src="viewer-font.js"></script>
+</body>
+
+</html>

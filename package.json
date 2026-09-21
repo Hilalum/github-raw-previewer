@@ -1,0 +1,18 @@
+{
+  "name": "github-raw-previewer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Chrome MV3 extension that previews videos, audio, Office docs, fonts and BMP images inline on GitHub file pages. This package.json only exists to run the zero-dependency static checks — the shipped extension has no build step and no dependencies.",
+  "type": "commonjs",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node tools/check-consistency.mjs",
+    "test": "node tools/check-consistency.mjs && node tools/check-packaging.mjs",
+    "check:packaging": "node tools/check-packaging.mjs",
+    "check:dom": "node tools/check-github-dom.mjs",
+    "selftest": "node tools/self-test.mjs"
+  }
+}

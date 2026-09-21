@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # GitHub's markup changes without any commit here, so the DOM contract is
+    # checked on a timer as well. This is the job that notices a GitHub redesign
+    # before users do.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+# Optional hardening: a fork PR never needs more than read access to its merge base.
+permissions:
+  contents: read
+
+# A fix pushed on top of a running build makes the old one irrelevant.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consistency:
+    name: consistency check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Third-party actions are pinned to full commit SHAs (resolved via the
+      # GitHub API). The trailing comment records the human-readable version.
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.3.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      # No dependencies are installed on purpose: the extension ships as-is and
+      # the validator is plain Node, so CI is fast and supply-chain free.
+      # Everything in this job is offline and deterministic.
+      - name: Validate manifests, rules, formats and docs
+        run: node tools/check-consistency.mjs
+
+      # Guards the release workflow itself: exclusion patterns, fail-closed
+      # verification and the archive-root layout of manifest.json.
+      - name: Validate the release packaging rules
+        run: node tools/check-packaging.mjs
+
+      # Guard the guard: proves the validator still catches every bug class it
+      # claims to, and that a clean tree does not trip it.
+      - name: Self-test the consistency checker
+        run: node tools/self-test.mjs
+
+  # The extension scrapes GitHub's markup. When GitHub renames something the
+  # previews stop appearing for every user, silently. This job asserts the
+  # contract in extension/selectors.js against the live site, so the failure
+  # lands here instead of in a one-star review.
+  #
+  # Exit codes: 0 = contract holds, 1 = GitHub's markup changed (fix
+  # extension/selectors.js), 2 = the canary could not reach GitHub — which is
+  # deliberately NOT treated as a pass.
+  dom-contract:
+    name: GitHub DOM canary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.3.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Check the GitHub DOM contract against the live site
+        env:
+          # Probe the repository this workflow runs in, so a rename that breaks
+          # this project's own sample files is caught too.
+          GRP_CANARY_REPO: ${{ github.repository }}
+        run: node tools/check-github-dom.mjs

@@ -1,371 +1,780 @@
 /**
- * GitHub Raw Previewer - Content Script
- * Injects a native video player or PDF viewer into the GitHub file viewer UI.
+ * GitHub Raw Previewer — content script.
+ *
+ * Renders an inline preview for the file currently open in GitHub's blob view.
+ *
+ * Design notes (each corresponds to a bug that used to exist here):
+ *
+ *  - `render()` is fully SYNCHRONOUS. The user config lives in a module-level
+ *    cache fed by chrome.storage (loaded once, kept fresh via
+ *    storage.onChanged), so a DOM mutation never triggers an async round trip.
+ *
+ *  - Every GitHub selector lives in selectors.js, which CI checks against real
+ *    GitHub pages daily. Nothing here hardcodes markup.
+ *
+ *  - The mutation observer only compares the route and schedules work; it never
+ *    touches the DOM itself. On non-blob routes the observer is disconnected
+ *    entirely and replaced by a single route comparison every 2s, so pages like
+ *    pull requests and settings cost nothing per mutation.
+ *
+ *  - Scheduling is a debounce with a maxWait ceiling, so continuous re-rendering
+ *    cannot starve the task.
+ *
+ *  - Hiding GitHub's UI is always reversible: whatever we hid is recorded and
+ *    restored on teardown, and if no preview ends up being rendered the
+ *    pre-paint hiding is switched off again (a failed preview must never leave
+ *    the file view blank).
+ *
+ *  - The Office viewer is behind an explicit per-file click, because it sends
+ *    the file URL to Microsoft.
+ *
+ *  - The font specimen is an extension-origin page (viewer-font.html), not an
+ *    inline `srcdoc` document, so it is not subject to GitHub's CSP.
  */
 
-const CONTAINER_ID = 'gh-raw-preview-container';
+(() => {
+  'use strict';
 
-const DEFAULT_OPTIONS = {
-  "Video": { _enabled: true, mp4: true, webm: true, ogg: true, mov: true },
-  "Audio": { _enabled: true, mp3: true, wav: true, flac: true, m4a: true, aac: true },
-  "Image & Vectors": { _enabled: true, bmp: true, tiff: true, tif: true, heic: true },
-  "Office": { _enabled: true, xls: true, xlsx: true, doc: true, docx: true, ppt: true, pptx: true },
-  "Fonts": { _enabled: true, ttf: true, otf: true, woff: true, woff2: true },
-  "3D Models": { _enabled: true, glb: true }
-};
+  const GRP = globalThis.GRP_FORMATS;
+  const SEL = globalThis.GRP_SELECTORS;
+  if (!GRP || !SEL) return;
 
-function getExtension(filename) {
-  const parts = filename.split('.');
-  if (parts.length <= 1) return '';
-  return parts[parts.length - 1].toLowerCase();
-}
+  const CONTAINER_ID = 'gh-raw-preview-container';
+  const ACTIVE_ATTR = 'data-grp-active';
+  const BLOB_PATH_RE = /^\/[^/]+\/[^/]+\/blob\/[^/]+\/(.+)$/;
+  const PREVIEW_HOSTS = ['https://raw.githubusercontent.com', 'https://media.githubusercontent.com'];
 
-// ── Debounce + Lock ──────────────────────────────────────────────────────────
-let _debounceTimer = null;
-let _injecting = false;  // async lock to prevent concurrent injections
+  /** How long to wait for a container before concluding the markup changed. */
+  const INJECT_DEADLINE_MS = 5000;
+  /** Route poll interval used while the observer is parked on non-blob pages. */
+  const NONBLOB_POLL_MS = 2000;
 
-function scheduleInject(delay) {
-  clearTimeout(_debounceTimer);
-  _debounceTimer = setTimeout(() => {
-    if (!_injecting) {
-      _injecting = true;
-      injectPreview().finally(() => { _injecting = false; });
+  const DEBUG = false;
+
+  // ── Diagnostics ────────────────────────────────────────────────────────────
+
+  let warned = false;
+
+  /** One-shot warning: a broken selector should be diagnosable without spamming
+   *  the console on every mutation. */
+  function warnOnce(...args) {
+    if (warned) return;
+    warned = true;
+    console.warn('[GitHub Raw Previewer]', ...args);
+  }
+
+  function debug(...args) {
+    if (DEBUG) console.log('[GitHub Raw Previewer]', ...args);
+  }
+
+  /** True while the extension context is alive. After the extension is
+   *  reloaded/updated with a tab open, chrome.runtime.id disappears and every
+   *  chrome.* call throws. */
+  function hasRuntime() {
+    try {
+      return !!(chrome && chrome.runtime && chrome.runtime.id);
+    } catch (err) {
+      return false;
     }
-  }, delay);
-}
+  }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+  /** Report the outcome to the service worker, which owns the toolbar badge.
+   *  This is the only feedback channel, and it stays entirely local. */
+  function reportDiagnostic(ok, reason) {
+    if (!hasRuntime()) return;
+    try {
+      chrome.runtime.sendMessage({ type: 'grp-diagnostic', ok, reason: reason || '', url: location.href });
+    } catch (err) {
+      /* context invalidated mid-flight */
+    }
+  }
 
-/** Remove ALL preview containers from the entire page (handles duplicates) */
-function removeAllContainers() {
-  document.querySelectorAll('#' + CONTAINER_ID).forEach(el => el.remove());
-}
+  // ── Config cache ───────────────────────────────────────────────────────────
 
-/** Find the best GitHub DOM target to inject into */
-function findTargetContainer() {
-  return [
-    document.querySelector('[class*="BlobContent-module__blobContentSection"]'),
-    document.querySelector('[class*="BlobViewContent-module__blobContainer"]'),
-    document.querySelector('[data-testid="repos-file-display"]'),
-    document.querySelector('main .Box'),
-    document.querySelector('.js-blob-wrapper')
-  ].find(c => c !== null) || null;
-}
+  let config = GRP.defaultConfig();
 
-/** Hide GitHub's native file viewer elements */
-function hideNativeElements(targetContainer) {
-  if (!targetContainer) return;
+  function initConfig() {
+    if (!hasRuntime()) return;
 
-  const elementsToHide = [
-    targetContainer.querySelector('[data-testid="repo-file-blob"] > div > div'),
-    targetContainer.querySelector('.blankslate'),
-    targetContainer.querySelector('[class*="tooLargeError"]'),
-    targetContainer.querySelector('[data-testid="blob-viewer-container"]'),
-    targetContainer.querySelector('.js-blob-wrapper'),
-    targetContainer.querySelector('table.highlight'),
-    targetContainer.querySelector('[data-testid="repo-file-blob"] > div'),
-    // Code editor / syntax-highlighted source code views (for text-based formats like .gltf, .svg, .obj)
-    targetContainer.querySelector('[class*="react-code-text"]'),
-    targetContainer.querySelector('[class*="react-blob-print-hide"]'),
-    targetContainer.querySelector('[class*="CodeMirror"]'),
-    targetContainer.querySelector('section[aria-labelledby]'),  // React code section wrapper
-    targetContainer.querySelector('[class*="react-blob-header"]')?.nextElementSibling  // content after header
-  ];
+    try {
+      chrome.storage.local.get(['previewConfig'], (res) => {
+        if (!hasRuntime()) return;
+        config = GRP.mergeConfig(res && res.previewConfig);
+        debug('config loaded');
+        scheduleTask(0);
+      });
+    } catch (err) {
+      warnOnce('could not read config; using defaults', err);
+    }
 
-  elementsToHide.forEach(el => {
-    if (el && el.style.display !== 'none') {
+    try {
+      // Live toggling: applying a change from the popup no longer waits for an
+      // unrelated DOM mutation.
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local' || !changes.previewConfig) return;
+        config = GRP.mergeConfig(changes.previewConfig.newValue);
+        debug('config changed');
+        scheduleTask(0);
+      });
+    } catch (err) {
+      /* context already invalidated */
+    }
+  }
+
+  // ── Scheduling ─────────────────────────────────────────────────────────────
+
+  let timer = null;
+  let firstRequestAt = 0;
+  let running = false;
+
+  /**
+   * Debounce with a ceiling: the task runs `delay` ms after the last request,
+   * but never later than `maxWait` after the first one, so a page that mutates
+   * continuously still gets its preview.
+   */
+  function scheduleTask(delay = 150, maxWait = 800) {
+    if (timer === null) firstRequestAt = Date.now();
+    else clearTimeout(timer);
+    const wait = Math.min(delay, Math.max(0, firstRequestAt + maxWait - Date.now()));
+    timer = setTimeout(runTask, wait);
+  }
+
+  function runTask() {
+    timer = null;
+    if (running) {
+      // Re-entrancy: reschedule instead of dropping the work.
+      scheduleTask(150);
+      return;
+    }
+    running = true;
+    try {
+      render();
+    } catch (err) {
+      warnOnce('render failed', err);
+    } finally {
+      running = false;
+    }
+  }
+
+  // ── Reversible hiding ──────────────────────────────────────────────────────
+
+  /** element -> the inline `display` it had before we hid it. Iterable, because
+   *  teardown has to restore everything we touched. */
+  const hiddenNodes = new Map();
+
+  function hideNode(el) {
+    if (!el || el.id === CONTAINER_ID) return;
+    if (!hiddenNodes.has(el)) hiddenNodes.set(el, el.style.display || '');
+    if (el.style.getPropertyValue('display') !== 'none') {
       el.style.setProperty('display', 'none', 'important');
     }
-  });
+  }
 
-  // Also hide any direct children of the blob container that aren't our preview
-  const blobEl = targetContainer.querySelector('[data-testid="repo-file-blob"]');
-  if (blobEl) {
-    Array.from(blobEl.children).forEach(child => {
-      if (child.id !== 'gh-raw-preview-container' && child.style.display !== 'none') {
-        child.style.setProperty('display', 'none', 'important');
+  function restoreNative() {
+    hiddenNodes.forEach((previous, el) => {
+      try {
+        el.style.removeProperty('display');
+        if (previous) el.style.display = previous;
+      } catch (err) {
+        /* node detached; nothing to restore */
       }
+    });
+    hiddenNodes.clear();
+  }
+
+  /** Hide GitHub's own view of the file we are previewing. Idempotent, scoped
+   *  to `target`, and never falls back to an arbitrary ancestor. */
+  function hideNative(target) {
+    for (const entry of SEL.HIDE) hideNode(target.querySelector(entry.selector));
+
+    // The "View raw" placeholder, deliberately scoped to the preview target
+    // (scanning every <a> on the document was a real cost).
+    target.querySelectorAll('a').forEach((a) => {
+      if (a.textContent.trim().toLowerCase() !== SEL.VIEW_RAW.text) return;
+      hideNode(a.closest(SEL.VIEW_RAW.containerSelector) || a);
     });
   }
 
-  document.querySelectorAll('a').forEach(a => {
-    if (a.textContent.trim().toLowerCase() === 'view raw') {
-      const parentBlock = a.closest('[class*="tooLargeError"]') || a.closest('.blankslate') || a.closest('div');
-      if (parentBlock && parentBlock.style.display !== 'none') {
-        parentBlock.style.setProperty('display', 'none', 'important');
-      } else if (a.style.display !== 'none') {
-        a.style.setProperty('display', 'none', 'important');
-      }
+  // ── Pre-paint intent ───────────────────────────────────────────────────────
+
+  /**
+   * Marks <html> so injection.css can hide GitHub's placeholder before the first
+   * paint. Set optimistically from the route alone (the config arrives a moment
+   * later), and always cleared when we turn out not to be previewing — a failed
+   * preview must give GitHub's own UI back rather than leave a blank area.
+   */
+  function setActive(on) {
+    const root = document.documentElement;
+    if (!root) return;
+    if (on) root.setAttribute(ACTIVE_ATTR, '');
+    else root.removeAttribute(ACTIVE_ATTR);
+  }
+
+  function wantsPreview() {
+    const match = currentRoute().match(BLOB_PATH_RE);
+    if (!match) return false;
+    return GRP.isEnabled(config, getExtension(match[1]));
+  }
+
+  /**
+   * Warm the connection to GitHub's file host before the preview element is
+   * created. Deliberately `preconnect` only: a speculative `preload` of the raw
+   * URL would spend the user's bandwidth on a possibly multi-hundred-megabyte
+   * video the moment the page opens, and the URL synthesised from the address
+   * bar can differ from the real one and redirect anyway.
+   */
+  function preconnect() {
+    const parent = document.head || document.documentElement;
+    if (!parent) return;
+    for (const href of PREVIEW_HOSTS) {
+      if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) continue;
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = href;
+      link.crossOrigin = 'anonymous';
+      parent.appendChild(link);
     }
-  });
-}
+  }
 
-// ── Main injection (returns a Promise) ───────────────────────────────────────
+  let deadlineTimer = null;
+  let deadlineRoute = null;
 
-function injectPreview() {
-  return new Promise((resolve) => {
-    // 1. Only operate on blob pages
-    const match = window.location.pathname.match(/^\/[^\/]+\/[^\/]+\/blob\/[^\/]+\/(.+)$/);
+  /** If we claimed the page for a preview and then never managed to render one,
+   *  undo the pre-paint hiding and say so. */
+  function scheduleDeadlineCheck() {
+    const route = currentRoute();
+    if (deadlineTimer !== null && deadlineRoute === route) return;
+    deadlineRoute = route;
+    clearTimeout(deadlineTimer);
+    deadlineTimer = setTimeout(() => {
+      deadlineTimer = null;
+      deadlineRoute = null;
+      if (state.container && state.container.isConnected) return;
+      if (!wantsPreview()) return;
+      setActive(false);
+      reportDiagnostic(false, 'no-container');
+      warnOnce(
+        'no preview container found for', route,
+        '— GitHub markup may have changed. Update extension/selectors.js and re-run `npm run check:dom`.',
+      );
+    }, INJECT_DEADLINE_MS);
+  }
 
-    if (!match) {
-      removeAllContainers();
-      return resolve();
+  function clearDeadline() {
+    clearTimeout(deadlineTimer);
+    deadlineTimer = null;
+    deadlineRoute = null;
+  }
+
+  /** Decide whether this route should be previewed, and prepare the page for it
+   *  before anything is rendered. */
+  function syncIntent() {
+    const wants = wantsPreview();
+    setActive(wants);
+    if (wants) {
+      preconnect();
+      scheduleDeadlineCheck();
+    } else {
+      clearDeadline();
     }
+    return wants;
+  }
+
+  // ── DOM helpers ────────────────────────────────────────────────────────────
+
+  function getExtension(filePath) {
+    const name = filePath.split('/').pop();
+    const dot = name.lastIndexOf('.');
+    return dot <= 0 ? '' : name.slice(dot + 1).toLowerCase();
+  }
+
+  function currentRoute() {
+    return location.pathname;
+  }
+
+  function isBlobRoute(pathname) {
+    return BLOB_PATH_RE.test(pathname);
+  }
+
+  function rawUrlFor() {
+    const button = SEL.findRawButton(document);
+    if (button && button.href) return button.href;
+    return location.href.replace('/blob/', '/raw/');
+  }
+
+  /** github.com/<o>/<r>/raw/... → raw.githubusercontent.com/<o>/<r>/... */
+  function canonicalRawUrl(url) {
+    if (!url.startsWith('https://github.com/')) return url;
+    return url
+      .replace('https://github.com/', 'https://raw.githubusercontent.com/')
+      .replace('/raw/', '/')
+      .replace('/refs/heads/', '/');
+  }
+
+  /** GitHub's own resolved colour scheme, so extension-origin viewers can match
+   *  the page instead of hardcoding a dark theme. */
+  function detectTheme() {
+    const scheme = getComputedStyle(document.documentElement).colorScheme || '';
+    if (scheme.includes('dark')) return 'dark';
+    if (scheme.includes('light')) return 'light';
+    const mode = document.documentElement.getAttribute('data-color-mode');
+    if (mode === 'dark' || mode === 'light') return mode;
+    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  // ── Rendering ──────────────────────────────────────────────────────────────
+
+  const state = { key: null, container: null, routeKey: null };
+
+  function teardown() {
+    document.querySelectorAll('#' + CONTAINER_ID).forEach((el) => el.remove());
+    restoreNative();
+    setActive(false);
+    state.container = null;
+    state.key = null;
+  }
+
+  /** Work out what (if anything) this route should preview. Pure, cheap, sync. */
+  function resolveContext() {
+    const pathname = currentRoute();
+    const match = pathname.match(BLOB_PATH_RE);
+    if (!match) return null;
 
     const filePath = match[1];
     const ext = getExtension(filePath);
+    const hit = GRP.lookup(ext);
+    if (!hit || !GRP.isEnabled(config, ext)) return null;
 
-    // 2. Async: read user config
-    chrome.storage.local.get(['previewConfig'], (res) => {
-      const config = res.previewConfig || DEFAULT_OPTIONS;
-
-      // 3. Find which category this extension belongs to and whether it's enabled
-      let currentCategory = null;
-      let isSupported = false;
-
-      for (const cat in DEFAULT_OPTIONS) {
-        if (DEFAULT_OPTIONS[cat][ext] !== undefined) {
-          currentCategory = cat;
-          const userCat = config[cat] || DEFAULT_OPTIONS[cat];
-          if (userCat._enabled !== false && userCat[ext] !== false) {
-            isSupported = true;
-          }
-          break;
-        }
-      }
-
-      if (!isSupported) {
-        removeAllContainers();
-        return resolve();
-      }
-
-      // 4. Determine raw URL
-      let rawUrl = '';
-      const rawButton = document.querySelector('[data-testid="raw-button"]');
-      if (rawButton && rawButton.href) {
-        rawUrl = rawButton.href;
-      } else {
-        rawUrl = window.location.href.replace('/blob/', '/raw/');
-      }
-
-      // 5. Find target container
-      const targetContainer = findTargetContainer();
-      if (!targetContainer) return resolve();
-
-      // 6. Hide native elements
-      hideNativeElements(targetContainer);
-
-      // ★ CRITICAL: Re-check for existing containers INSIDE the async callback
-      //   This is the second gate that prevents duplicate injection.
-      const allExisting = document.querySelectorAll('#' + CONTAINER_ID);
-
-      // If a container for this exact URL already exists and is properly parented, we're done
-      for (const ec of allExisting) {
-        if (ec.dataset.url === rawUrl) {
-          // Remove any extra duplicates beyond this one
-          let kept = false;
-          allExisting.forEach(c => {
-            if (c.dataset.url === rawUrl && !kept) {
-              kept = true; // keep the first matching one
-            } else {
-              c.remove(); // remove all others (duplicates or stale)
-            }
-          });
-          return resolve();
-        }
-      }
-
-      // Remove ALL stale containers (wrong URL = leftover from previous file)
-      allExisting.forEach(c => c.remove());
-
-      // 7. Determine file type flags
-      const isVideo = currentCategory === 'Video';
-      const isAudio = currentCategory === 'Audio';
-      const isImage = currentCategory === 'Image & Vectors';
-      const isOffice = currentCategory === 'Office';
-      const isFont = currentCategory === 'Fonts';
-      const is3DModel = currentCategory === '3D Models';
-
-      // 8. Build container
-      const container = document.createElement('div');
-      container.id = CONTAINER_ID;
-      container.dataset.url = rawUrl;
-      container.style.cssText = `
-        width: 100%;
-        margin-top: 16px;
-        padding: 16px;
-        box-sizing: border-box;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: transparent;
-        border: 1px solid var(--borderColor-default, #30363d);
-        border-radius: 6px;
-      `;
-
-      if (isVideo) {
-        const video = document.createElement('video');
-        video.src = rawUrl;
-        video.controls = true;
-        video.style.cssText = 'max-width:100%;max-height:80vh;border-radius:6px;outline:none;';
-        container.appendChild(video);
-      } else if (isAudio) {
-        const audio = document.createElement('audio');
-        audio.src = rawUrl;
-        audio.controls = true;
-        audio.style.cssText = 'width:100%;margin-top:10px;outline:none;';
-        container.appendChild(audio);
-      } else if (isOffice) {
-        let officeRawUrl = rawUrl;
-        if (officeRawUrl.startsWith('https://github.com/')) {
-          officeRawUrl = officeRawUrl
-            .replace('https://github.com/', 'https://raw.githubusercontent.com/')
-            .replace('/raw/', '/')
-            .replace('/refs/heads/', '/');
-        }
-        const sep = officeRawUrl.includes('?') ? '&' : '?';
-        const noCacheUrl = `${officeRawUrl}${sep}cb=${Date.now()}`;
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(noCacheUrl)}`;
-        iframe.style.cssText = 'width:100%;height:85vh;border:none;border-radius:6px 6px 0 0;background:white;display:block;';
-        container.style.flexDirection = 'column';
-        container.style.padding = '0';
-        container.style.border = '1px solid var(--borderColor-default, #30363d)';
-        container.style.overflow = 'hidden';
-
-        const fallbackAlert = document.createElement('div');
-        fallbackAlert.innerHTML = `
-          <div style="padding:12px 16px;background-color:var(--bgColor-attention-muted,rgba(187,128,9,0.15));color:var(--fgColor-attention,#d29922);font-size:13px;text-align:center;border-top:1px solid var(--borderColor-default,#30363d);border-radius:0 0 6px 6px;width:100%;box-sizing:border-box;">
-            <strong>Note:</strong> Microsoft Viewer cannot access private repositories. If you see an error above, <a href="${rawUrl}" download style="color:var(--fgColor-accent,#58a6ff);font-weight:bold;text-decoration:underline;">click here to download</a> natively.
-          </div>
-        `;
-        container.appendChild(iframe);
-        container.appendChild(fallbackAlert);
-      } else if (isImage) {
-        const img = document.createElement('img');
-        img.src = rawUrl;
-        img.style.cssText = 'max-width:100%;max-height:85vh;border-radius:6px;object-fit:contain;';
-        container.appendChild(img);
-      } else if (isFont) {
-        const iframe = document.createElement('iframe');
-        const fontFormat = ext === 'ttf' ? 'truetype' : ext === 'otf' ? 'opentype' : ext;
-        iframe.srcdoc = `
-          <!DOCTYPE html><html><head><style>
-            @font-face { font-family: 'P'; src: url('${rawUrl}') format('${fontFormat}'); }
-            body { font-family:'P',sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; background:transparent; color:#c9d1d9; text-align:center; padding:20px; box-sizing:border-box; }
-            h1 { font-size:48px; margin-bottom:20px; font-weight:normal; }
-            p { font-size:24px; line-height:1.5; max-width:800px; }
-            .sizes { margin-top:30px; display:flex; flex-direction:column; gap:10px; }
-          </style></head><body>
-            <h1>A Quick Brown Fox Jumps Over The Lazy Dog</h1>
-            <p>0 1 2 3 4 5 6 7 8 9 ! @ # $ % ^ & * ( ) _ + - = { } | [ ] \\ : " ; ' < > ? , . /</p>
-            <div class="sizes">
-              <span style="font-size:16px">16px: The quick brown fox jumps...</span>
-              <span style="font-size:24px">24px: The quick brown fox jumps...</span>
-              <span style="font-size:36px">36px: The quick brown fox jumps...</span>
-            </div>
-          </body></html>
-        `;
-        iframe.style.cssText = 'width:100%;height:60vh;border:none;border-radius:6px;background:#0d1117;';
-        container.appendChild(iframe);
-      } else if (is3DModel) {
-        const iframe = document.createElement('iframe');
-        iframe.srcdoc = `
-          <!DOCTYPE html><html><head>
-            <style>
-              body {
-                margin:0;
-                padding:24px;
-                width:100vw;
-                height:100vh;
-                box-sizing:border-box;
-                background:#161b22;
-                color:#c9d1d9;
-                display:flex;
-                justify-content:center;
-                align-items:center;
-                font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-              }
-              .card {
-                width:min(520px, 100%);
-                border:1px solid #30363d;
-                border-radius:12px;
-                background:#0d1117;
-                padding:24px;
-                text-align:center;
-                box-shadow:0 16px 40px rgba(0,0,0,0.35);
-              }
-              h2 {
-                margin:0 0 12px;
-                font-size:24px;
-              }
-              p {
-                margin:0 0 16px;
-                line-height:1.6;
-                color:#8b949e;
-              }
-              a {
-                display:inline-block;
-                padding:10px 16px;
-                border-radius:999px;
-                color:#ffffff;
-                background:#238636;
-                text-decoration:none;
-                font-weight:600;
-              }
-            </style>
-          </head><body>
-            <div class="card">
-              <h2>3D model preview unavailable</h2>
-              <p>
-                Chrome Web Store forbids remote hosted code in Manifest V3 extensions.
-                This viewer was removed to keep the extension compliant.
-              </p>
-              <a href="${rawUrl}" target="_blank" rel="noopener noreferrer">Open raw 3D file</a>
-            </div>
-          </body></html>
-        `;
-        iframe.style.cssText = 'width:100%;height:70vh;border:none;border-radius:6px;background:#161b22;';
-        container.appendChild(iframe);
-      }
-
-      // 9. ★ FINAL SAFETY CHECK: one last look before DOM insertion
-      const lastCheck = document.querySelectorAll('#' + CONTAINER_ID);
-      lastCheck.forEach(c => c.remove());
-
-      // 10. Inject
-      if (targetContainer.classList.contains('Box')) {
-        targetContainer.parentElement.insertBefore(container, targetContainer);
-      } else {
-        targetContainer.prepend(container);
-      }
-
-      console.log(`[GitHub Raw Previewer] Injected ${ext} preview.`);
-      resolve();
-    });
-  });
-}
-
-// ── Event Listeners ──────────────────────────────────────────────────────────
-
-// Observe DOM mutations (debounced)
-let lastUrl = location.href;
-new MutationObserver(() => {
-  const currentUrl = location.href;
-  if (currentUrl !== lastUrl) {
-    lastUrl = currentUrl;
-    // URL changed: clean up immediately, then schedule fresh injection
-    removeAllContainers();
-    scheduleInject(300);
-  } else {
-    // Same URL, DOM mutated (React re-render) — light debounce
-    scheduleInject(150);
+    return {
+      key: pathname,
+      filePath,
+      fileName: filePath.split('/').pop(),
+      ext,
+      kind: hit.kind,
+      category: hit.category,
+      rawUrl: rawUrlFor(),
+    };
   }
-}).observe(document.body, { childList: true, subtree: true });
 
-// GitHub's own navigation events
-document.addEventListener('turbo:load', () => scheduleInject(300));
-document.addEventListener('pjax:end', () => scheduleInject(300));
+  function render() {
+    if (!hasRuntime()) return;
 
-// Initial
-scheduleInject(400);
+    const ctx = resolveContext();
+    if (!ctx) {
+      teardown();
+      return;
+    }
+
+    const target = SEL.findTargetContainer(document);
+    if (!target) {
+      // Never hide anything we cannot replace; the deadline reports this once.
+      setActive(false);
+      scheduleDeadlineCheck();
+      return;
+    }
+
+    // Fast path: same file, container still in the DOM. Only re-assert the
+    // native hiding (cheap and idempotent) in case React re-rendered it.
+    if (state.key === ctx.key && state.container && state.container.isConnected) {
+      setActive(true);
+      hideNative(target);
+      return;
+    }
+
+    teardown(); // restores whatever we hid for the previous file
+    setActive(true);
+    hideNative(target);
+
+    const container = buildContainer(ctx);
+    mount(container, target);
+
+    state.container = container;
+    state.key = ctx.key;
+    clearDeadline();
+    reportDiagnostic(true);
+    debug('previewed', ctx.ext);
+  }
+
+  function mount(container, target) {
+    if (target.classList.contains('Box') && target.parentElement) {
+      target.parentElement.insertBefore(container, target);
+    } else {
+      target.prepend(container);
+    }
+  }
+
+  const BASE_CONTAINER_STYLE = [
+    'width:100%',
+    'margin-top:16px',
+    'padding:16px',
+    'box-sizing:border-box',
+    'display:flex',
+    'justify-content:center',
+    'align-items:center',
+    'background-color:transparent',
+    'border:1px solid var(--borderColor-default, #30363d)',
+    'border-radius:6px',
+  ].join(';');
+
+  function buildContainer(ctx) {
+    const container = document.createElement('div');
+    container.id = CONTAINER_ID;
+    container.dataset.url = ctx.rawUrl;
+    container.style.cssText = BASE_CONTAINER_STYLE;
+    container.setAttribute('role', 'region');
+    container.setAttribute('aria-label', `${ctx.fileName} preview`);
+
+    switch (ctx.kind) {
+      case GRP.KIND.VIDEO:
+      case GRP.KIND.AUDIO:
+        container.appendChild(buildMediaFrame(ctx));
+        break;
+      case GRP.KIND.IMAGE:
+        container.appendChild(buildImage(ctx));
+        break;
+      case GRP.KIND.OFFICE:
+        renderOffice(container, ctx);
+        break;
+      case GRP.KIND.FONT:
+        container.appendChild(buildFontFrame(ctx));
+        break;
+      default:
+        break;
+    }
+    return container;
+  }
+
+  /**
+   * Build an iframe pointing at one of the extension's own viewer pages.
+   *
+   * WHY EVERY RICH PREVIEW IS AN EXTENSION-ORIGIN PAGE:
+   * GitHub's CSP on blob pages pins `media-src` to a list that excludes
+   * raw.githubusercontent.com, and `frame-src` to two githubusercontent hosts.
+   * A <video>/<audio> injected straight into the page is therefore blocked —
+   * Chrome reports that as "MEDIA_ELEMENT_ERROR: Format error", which looks like
+   * a codec bug and is not — and so is an iframe aimed at Microsoft's viewer.
+   * An extension-origin frame is governed by the extension's own CSP instead, so
+   * all of this works while GitHub's policy is left completely untouched.
+   */
+  function buildViewerFrame(opts) {
+    const iframe = document.createElement('iframe');
+    iframe.title = `${opts.name} preview`;
+    iframe.className = opts.className;
+    iframe.style.cssText =
+      `width:100%;height:${opts.height};border:none;border-radius:6px;background:transparent;display:block;`;
+
+    const params = new URLSearchParams(opts.params || {});
+    params.set('src', opts.src);
+    params.set('name', opts.name);
+    params.set('theme', detectTheme());
+    iframe.src = chrome.runtime.getURL(opts.page) + '?' + params.toString();
+    return iframe;
+  }
+
+  /**
+   * Video and audio. The viewer reports the real aspect ratio so the frame can be
+   * sized to it, and reports a load failure so we can swap in the download card.
+   */
+  function buildMediaFrame(ctx) {
+    const isAudio = ctx.kind === GRP.KIND.AUDIO;
+    const iframe = buildViewerFrame({
+      page: 'viewer-media.html',
+      src: ctx.rawUrl,
+      name: ctx.fileName,
+      className: 'grp-media-frame',
+      height: isAudio ? '92px' : '360px',
+      params: { kind: isAudio ? 'audio' : 'video' },
+    });
+
+    const onMessage = (event) => {
+      if (event.source !== iframe.contentWindow) return;
+      const type = event.data && event.data.type;
+
+      if (type === 'grp-media-ready') {
+        window.removeEventListener('message', onMessage);
+        if (!iframe.isConnected || event.data.kind !== 'video') return;
+        const { width, height } = event.data;
+        if (!(width > 0) || !(height > 0)) return;
+        const available = iframe.clientWidth || 640;
+        const fitted = Math.round(available * (height / width));
+        const ceiling = Math.round(window.innerHeight * 0.8);
+        iframe.style.height = `${Math.min(Math.max(fitted, 160), ceiling)}px`;
+        return;
+      }
+
+      if (type === 'grp-media-error') {
+        window.removeEventListener('message', onMessage);
+        const parent = iframe.parentElement;
+        if (parent && iframe.isConnected) {
+          parent.replaceChildren(buildFallbackCard('This file could not be played in the browser.', ctx));
+        }
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return iframe;
+  }
+
+  function buildImage(ctx) {
+    const img = document.createElement('img');
+    img.src = ctx.rawUrl;
+    img.alt = ctx.fileName;
+    img.decoding = 'async';
+    img.style.cssText = 'max-width:100%;max-height:85vh;border-radius:6px;object-fit:contain;';
+    img.addEventListener('error', () => {
+      if (!img.isConnected) return;
+      debug('image failed to load', ctx.rawUrl);
+      img.replaceWith(buildFallbackCard('This image could not be displayed.', ctx));
+    }, { once: true });
+    return img;
+  }
+
+  const CARD_STYLE = [
+    'padding:20px',
+    'text-align:center',
+    'font-size:13px',
+    'line-height:1.6',
+    'color:var(--fgColor-muted, #8b949e)',
+  ].join(';');
+
+  function buildFallbackCard(message, ctx) {
+    const card = document.createElement('div');
+    card.style.cssText = CARD_STYLE;
+
+    const text = document.createElement('p');
+    text.style.margin = '0 0 12px';
+    text.textContent = message;
+    card.appendChild(text);
+
+    card.appendChild(buildRawLink(ctx));
+    return card;
+  }
+
+  function buildRawLink(ctx) {
+    const link = document.createElement('a');
+    link.href = ctx.rawUrl;
+    link.setAttribute('download', '');
+    link.textContent = 'Download the raw file';
+    link.style.cssText = 'color:var(--fgColor-accent, #58a6ff);font-weight:600;';
+    return link;
+  }
+
+  /**
+   * Office documents are rendered by Microsoft's hosted viewer, which means the
+   * file URL leaves the browser. Never do that without an explicit click.
+   */
+  function renderOffice(container, ctx) {
+    const category = GRP.categories.find((c) => c.key === ctx.category);
+    container.style.flexDirection = 'column';
+    container.style.padding = '0';
+    container.style.overflow = 'hidden';
+
+    const card = document.createElement('div');
+    card.style.cssText = `${CARD_STYLE};padding:24px;`;
+
+    const title = document.createElement('p');
+    title.style.cssText = 'margin:0 0 8px;font-weight:600;color:var(--fgColor-default, #c9d1d9);';
+    title.textContent = ctx.fileName;
+    card.appendChild(title);
+
+    const note = document.createElement('p');
+    note.style.margin = '0 0 16px';
+    note.textContent = (category && category.disclosure) ||
+      'This preview is rendered by Microsoft, so the file link is sent to Microsoft when you continue.';
+    card.appendChild(note);
+
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:12px;justify-content:center;flex-wrap:wrap;';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Load Microsoft viewer';
+    button.style.cssText = [
+      'padding:8px 14px',
+      'border-radius:6px',
+      'border:1px solid var(--borderColor-default, #30363d)',
+      'background:var(--bgColor-muted, #21262d)',
+      'color:var(--fgColor-default, #c9d1d9)',
+      'font-size:13px',
+      'font-weight:600',
+      'cursor:pointer',
+    ].join(';');
+    button.addEventListener('click', () => {
+      container.replaceChildren(buildOfficeFrame(ctx));
+    });
+    actions.appendChild(button);
+    actions.appendChild(buildRawLink(ctx));
+    card.appendChild(actions);
+
+    container.appendChild(card);
+  }
+
+  function buildOfficeFrame(ctx) {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'width:100%;';
+
+    const iframe = buildViewerFrame({
+      page: 'viewer-office.html',
+      src: canonicalRawUrl(ctx.rawUrl),
+      name: ctx.fileName,
+      className: 'grp-office-frame',
+      height: '85vh',
+      params: {},
+    });
+    iframe.style.borderRadius = '6px 6px 0 0';
+    wrapper.appendChild(iframe);
+
+    const note = document.createElement('div');
+    note.style.cssText = [
+      'padding:12px 16px',
+      'background-color:var(--bgColor-attention-muted, rgba(187,128,9,0.15))',
+      'color:var(--fgColor-attention, #d29922)',
+      'font-size:13px',
+      'text-align:center',
+      'border-top:1px solid var(--borderColor-default, #30363d)',
+      'border-radius:0 0 6px 6px',
+      'box-sizing:border-box',
+      'width:100%',
+    ].join(';');
+
+    const strong = document.createElement('strong');
+    strong.textContent = 'Note: ';
+    note.appendChild(strong);
+    note.appendChild(document.createTextNode(
+      'Microsoft cannot access private repositories. If the preview above shows an error, '
+    ));
+    const link = document.createElement('a');
+    link.href = ctx.rawUrl;
+    link.setAttribute('download', '');
+    link.textContent = 'download the file';
+    link.style.cssText = 'color:var(--fgColor-accent, #58a6ff);font-weight:bold;text-decoration:underline;';
+    note.appendChild(link);
+    note.appendChild(document.createTextNode(' instead.'));
+
+    wrapper.appendChild(note);
+    return wrapper;
+  }
+
+  function buildFontFrame(ctx) {
+    const iframe = buildViewerFrame({
+      page: 'viewer-font.html',
+      src: ctx.rawUrl,
+      name: ctx.fileName,
+      className: 'grp-font-frame',
+      height: '65vh',
+      params: {},
+    });
+
+    // The viewer reports status back to us: a failed load swaps in a usable
+    // download card, and either outcome retires the listener (one per injection
+    // would otherwise pile up across navigations).
+    const onMessage = (event) => {
+      if (event.source !== iframe.contentWindow) return;
+      const type = event.data && event.data.type;
+      if (type !== 'grp-font-error' && type !== 'grp-font-ok') return;
+      window.removeEventListener('message', onMessage);
+      if (type !== 'grp-font-error') return;
+      const parent = iframe.parentElement;
+      if (parent && iframe.isConnected) {
+        parent.replaceChildren(buildFallbackCard('This font could not be loaded.', ctx));
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return iframe;
+  }
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+  const observer = new MutationObserver(() => {
+    if (!hasRuntime()) return;
+
+    const changed = noteRoute();
+    if (!isBlobRoute(currentRoute())) return;
+
+    if (changed) {
+      syncIntent();
+      scheduleTask(150);
+      return;
+    }
+
+    // Already previewing this file: only the cheap, idempotent native hiding may
+    // need re-applying, so wait longer and cut the churn right down.
+    const settled = state.key === currentRoute() && state.container && state.container.isConnected;
+    scheduleTask(settled ? 400 : 150);
+  });
+
+  let pollTimer = null;
+
+  /**
+   * Detect a route change, clean up after the previous one, and re-arm.
+   * Returns true when the route actually changed.
+   */
+  function noteRoute() {
+    const route = currentRoute();
+    if (route === state.routeKey) return false;
+    state.routeKey = route;
+    teardown();
+    clearDeadline();
+    syncObserverArming();
+    return true;
+  }
+
+  /**
+   * Observe mutations only where they matter. On a blob page the observer needs
+   * to see re-renders; everywhere else (pull requests, issues, settings) a
+   * single route comparison every 2s is enough, which takes the per-mutation
+   * cost of the extension on those pages to zero.
+   */
+  function syncObserverArming() {
+    if (isBlobRoute(currentRoute())) {
+      if (pollTimer !== null) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+      observer.disconnect();
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+      return;
+    }
+
+    observer.disconnect();
+    if (pollTimer !== null) return;
+    pollTimer = setInterval(() => {
+      if (!hasRuntime()) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        return;
+      }
+      if (currentRoute() === state.routeKey) return;
+      noteRoute();
+      if (isBlobRoute(currentRoute())) {
+        syncIntent();
+        scheduleTask(150);
+      }
+    }, NONBLOB_POLL_MS);
+  }
+
+  function onNavigation() {
+    if (!hasRuntime()) return;
+    noteRoute();
+    syncObserverArming();
+    if (isBlobRoute(currentRoute())) {
+      syncIntent();
+      scheduleTask(300);
+    }
+  }
+
+  function boot() {
+    initConfig();
+    state.routeKey = currentRoute();
+    syncObserverArming();
+    if (syncIntent()) scheduleTask(300);
+  }
+
+  if (document.documentElement) {
+    boot();
+  } else {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  }
+
+  document.addEventListener('turbo:load', onNavigation);
+  window.addEventListener('pageshow', onNavigation);
+})();

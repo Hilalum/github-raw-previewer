@@ -1,7 +1,39 @@
 [
     {
+        "id": 1,
+        "priority": 100,
+        "action": {
+            "type": "allow"
+        },
+        "condition": {
+            "regexFilter": "^https://(raw|media)\\.githubusercontent\\.com/[^?#]*[?&]download=true",
+            "resourceTypes": [
+                "main_frame"
+            ]
+        }
+    },
+    {
         "id": 2,
         "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "Content-Disposition",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "regexFilter": "^https://(raw|media)\\.githubusercontent\\.com/[^?#]*(\\?[^#]*)?$",
+            "resourceTypes": [
+                "main_frame"
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "priority": 20,
         "action": {
             "type": "modifyHeaders",
             "responseHeaders": [
@@ -17,301 +49,10 @@
             ]
         },
         "condition": {
-            "urlFilter": "/*.mp4*",
-            "excludedRegexFilter": ".*download=true.*",
+            "regexFilter": "^https://(raw|media)\\.githubusercontent\\.com/[^?#]*\\.mp4(\\?[^#]*)?$",
             "resourceTypes": [
                 "main_frame",
-                "sub_frame",
-                "media",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 4,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.webm*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "media",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 5,
-        "priority": 5,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 6,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Security-Policy",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "||github.com",
-            "resourceTypes": [
-                "main_frame"
-            ]
-        }
-    },
-    {
-        "id": 60,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Security-Policy",
-                    "operation": "remove"
-                },
-                {
-                    "header": "X-Frame-Options",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ],
-            "resourceTypes": [
-                "sub_frame"
-            ]
-        }
-    },
-    {
-        "id": 7,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "video/quicktime"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.mov*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "media",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 8,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "audio/mpeg"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.mp3*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "media",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 13,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "regexFilter": "^https?://raw\\.githubusercontent\\.com/.*\\.(ttf|otf|woff|woff2)+$",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ]
-        }
-    },
-    {
-        "id": 14,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "regexFilter": "^https?://raw\\.githubusercontent\\.com/.*\\.(glb)+$",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ]
-        }
-    },
-    {
-        "id": 15,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                }
-            ]
-        },
-        "condition": {
-            "regexFilter": "^https?://media\\.githubusercontent\\.com/.*\\.(ttf|otf|woff|woff2|glb)+.*$",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ]
-        }
-    },
-    {
-        "id": 16,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "image/bmp"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.bmp*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
-            ]
-        }
-    },
-    {
-        "id": 17,
-        "priority": 10,
-        "action": {
-            "type": "modifyHeaders",
-            "responseHeaders": [
-                {
-                    "header": "Content-Disposition",
-                    "operation": "remove"
-                },
-                {
-                    "header": "Content-Type",
-                    "operation": "set",
-                    "value": "image/tiff"
-                }
-            ]
-        },
-        "condition": {
-            "urlFilter": "/*.tiff*",
-            "excludedRegexFilter": ".*download=true.*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ],
-            "requestDomains": [
-                "raw.githubusercontent.com",
-                "media.githubusercontent.com"
+                "media"
             ]
         }
     }

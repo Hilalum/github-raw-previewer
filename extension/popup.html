@@ -1,31 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>GitHub Raw Previewer</title>
-    <link rel="stylesheet" href="popup.css">
+  <meta charset="utf-8">
+  <title>GitHub Raw Previewer</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
-    <div class="header">
-        <img src="icons/icon48.png" alt="icon">
-        <div class="title-area">
-            <h2>Raw Previewer</h2>
-            <span class="version">v2026.3.4</span>
-        </div>
+  <header class="header">
+    <img src="icons/icon48.png" alt="" aria-hidden="true" width="36" height="36">
+    <div class="title-area">
+      <h2>Raw Previewer</h2>
+      <span class="version" id="version">&mdash;</span>
     </div>
-    <p class="subtitle">Toggle formats to preview inline. Disabled ones will trigger standard downloads.</p>
+  </header>
 
-    <div id="categories-container">
-        <!-- Rendered by popup.js -->
-    </div>
+  <p class="subtitle">Toggle a format to preview it inline. Disabled formats keep GitHub's normal
+    download behaviour.</p>
 
-    <div class="footer">
-        <a href="https://github.com/Hilalum/github-raw-previewer" target="_blank">Star on GitHub ⭐</a>
-    </div>
+  <p class="notice" id="diagnostic" role="status" hidden></p>
 
-    <script src="popup.js"></script>
+  <div id="categories-container">
+    <!-- Rendered by popup.js from the format registry -->
+  </div>
+
+  <footer class="footer">
+    <button type="button" id="reset" class="link-button">Reset to defaults</button>
+    <span class="sep" aria-hidden="true">&bull;</span>
+    <a href="https://github.com/Hilalum/github-raw-previewer" target="_blank"
+      rel="noopener noreferrer">Star on GitHub &#11088;</a>
+  </footer>
+
+  <script src="formats.js"></script>
+  <script src="popup.js"></script>
 </body>
 
 </html>

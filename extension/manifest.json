@@ -1,18 +1,19 @@
 {
   "manifest_version": 3,
   "name": "GitHub Raw Previewer",
-  "version": "2026.3.5",
-  "description": "Inline preview for Videos, Audio, Office docs, Fonts and 3D Models on GitHub. Stop forced downloads forever!",
+  "version": "2026.3.6",
+  "description": "Preview videos, audio, Office docs, fonts and BMP images inline on GitHub. No forced downloads, no servers, no tracking.",
   "permissions": [
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
     "storage"
   ],
   "host_permissions": [
     "https://raw.githubusercontent.com/*",
-    "https://github.com/*",
     "https://media.githubusercontent.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "declarative_net_request": {
     "rule_resources": [
       {
@@ -28,13 +29,35 @@
         "https://github.com/*"
       ],
       "js": [
+        "formats.js",
+        "selectors.js",
         "content.js"
       ],
-      "run_at": "document_idle"
+      "css": [
+        "injection.css"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "viewer-font.html",
+        "viewer-font.css",
+        "viewer-font.js",
+        "viewer-media.html",
+        "viewer-media.js",
+        "viewer-office.html",
+        "viewer-office.js"
+      ],
+      "matches": [
+        "https://github.com/*"
+      ]
     }
   ],
   "action": {
     "default_popup": "popup.html",
+    "default_title": "GitHub Raw Previewer",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
